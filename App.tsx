@@ -175,47 +175,50 @@ const App: React.FC = () => {
                         {/* Continuous Vertical Line for Roadmap */}
                         <div className="absolute left-[29px] top-6 bottom-6 w-0.5 bg-gradient-to-b from-cyber-cyan/20 via-cyber-purple/20 to-transparent"></div>
 
-                        {Object.entries(stepsByCategory).map(([category, catSteps]) => (
-                            <div key={category} className="mb-8 relative">
-                                <h3 className="text-[10px] font-bold font-display text-cyber-cyan uppercase tracking-widest mb-4 pl-10 opacity-90 flex items-center gap-2">
-                                    <MapPin size={10} /> {category}
-                                </h3>
-                                <div className="space-y-4">
-                                    {catSteps.map((step) => {
-                                        const isActive = step.id === currentStep.id;
-                                        const isCompleted = step.id < currentStep.id;
-                                        
-                                        return (
-                                            <button 
-                                                key={step.id}
-                                                id={`step-${step.id}`}
-                                                onClick={() => handleStepClick(step.id)}
-                                                onMouseEnter={() => playSfx.hover()}
-                                                className={`w-full text-left group relative pl-10 pr-2 py-1 transition-all duration-300`}
-                                            >
-                                                {/* Node on the line */}
-                                                <div className={`absolute left-[22px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 transition-all duration-300 z-10 ${
-                                                    isActive 
-                                                        ? 'bg-cyber-cyan border-cyber-cyan shadow-[0_0_10px_#06b6d4] scale-125' 
-                                                        : isCompleted 
-                                                            ? 'bg-cyber-panel border-cyber-green text-cyber-green' 
-                                                            : 'bg-cyber-panel border-cyber-muted'
-                                                }`}>
-                                                    {isCompleted && <div className="absolute inset-0 flex items-center justify-center"><Check size={8} /></div>}
-                                                    {isActive && <div className="absolute inset-0 flex items-center justify-center"><div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div></div>}
-                                                </div>
+                        {Object.entries(stepsByCategory).map(([category, catSteps]) => {
+                            const steps = catSteps as TutorialStep[];
+                            return (
+                                <div key={category} className="mb-8 relative">
+                                    <h3 className="text-[10px] font-bold font-display text-cyber-cyan uppercase tracking-widest mb-4 pl-10 opacity-90 flex items-center gap-2">
+                                        <MapPin size={10} /> {category}
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {steps.map((step) => {
+                                            const isActive = step.id === currentStep.id;
+                                            const isCompleted = step.id < currentStep.id;
+                                            
+                                            return (
+                                                <button 
+                                                    key={step.id}
+                                                    id={`step-${step.id}`}
+                                                    onClick={() => handleStepClick(step.id)}
+                                                    onMouseEnter={() => playSfx.hover()}
+                                                    className={`w-full text-left group relative pl-10 pr-2 py-1 transition-all duration-300`}
+                                                >
+                                                    {/* Node on the line */}
+                                                    <div className={`absolute left-[22px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 transition-all duration-300 z-10 ${
+                                                        isActive 
+                                                            ? 'bg-cyber-cyan border-cyber-cyan shadow-[0_0_10px_#06b6d4] scale-125' 
+                                                            : isCompleted 
+                                                                ? 'bg-cyber-panel border-cyber-green text-cyber-green' 
+                                                                : 'bg-cyber-panel border-cyber-muted'
+                                                    }`}>
+                                                        {isCompleted && <div className="absolute inset-0 flex items-center justify-center"><Check size={8} /></div>}
+                                                        {isActive && <div className="absolute inset-0 flex items-center justify-center"><div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div></div>}
+                                                    </div>
 
-                                                <div className={`rounded-lg p-2 transition-all duration-200 ${isActive ? 'bg-cyber-cyan/5 border border-cyber-cyan/10 translate-x-2' : 'group-hover:bg-cyber-text/5 border border-transparent'}`}>
-                                                    <span className={`block text-xs font-medium font-display transition-colors ${isActive ? 'text-cyber-cyan' : isCompleted ? 'text-cyber-muted' : 'text-cyber-text'}`}>
-                                                        {step.title}
-                                                    </span>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
+                                                    <div className={`rounded-lg p-2 transition-all duration-200 ${isActive ? 'bg-cyber-cyan/5 border border-cyber-cyan/10 translate-x-2' : 'group-hover:bg-cyber-text/5 border border-transparent'}`}>
+                                                        <span className={`block text-xs font-medium font-display transition-colors ${isActive ? 'text-cyber-cyan' : isCompleted ? 'text-cyber-muted' : 'text-cyber-text'}`}>
+                                                            {step.title}
+                                                        </span>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
