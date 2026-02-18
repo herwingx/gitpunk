@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, ChevronRight, Menu, Database, Sun, Moon } from 'lucide-react';
+import { MapPin, ChevronRight, Menu, Database, Sun, Moon, Github } from 'lucide-react';
 import { TutorialStep, Language } from '../../types';
 import { getPhaseStyles } from '../../utils/stepHelper';
 
@@ -24,6 +24,18 @@ const Header: React.FC<HeaderProps> = ({
   setLanguage
 }) => {
   const phaseStyle = getPhaseStyles(currentStep.category);
+  const [stars, setStars] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    fetch('https://api.github.com/repos/herwingx/gitpunk')
+      .then(res => res.json())
+      .then(data => {
+        if (typeof data.stargazers_count === 'number') {
+          setStars(data.stargazers_count);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <header className="h-16 border-b border-cyber-border bg-cyber-bg/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 z-30 sticky top-0 w-full transition-colors duration-300">
@@ -43,6 +55,18 @@ const Header: React.FC<HeaderProps> = ({
 
       <div className="flex items-center gap-2 flex-shrink-0">
         {/* Desktop Tools */}
+        <a
+          href="https://github.com/herwingx/gitpunk"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg border border-cyber-border hover:bg-cyber-panel transition-all group active:scale-95"
+          title="Star on GitHub"
+        >
+          <Github size={14} className="text-cyber-staging group-hover:scale-110 transition-transform" />
+          <span className="text-cyber-muted group-hover:text-cyber-text">
+            {stars !== null ? `${stars} Stars` : 'GitHub'}
+          </span>
+        </a>
         <button
           onClick={onToggleMatrix}
           className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg border border-cyber-border hover:bg-cyber-panel transition-all group active:scale-95"
