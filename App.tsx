@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { TUTORIAL_CONTENT, UI_TEXT } from './constants';
 import { Language } from './types';
 import TerminalWindow from './components/TerminalWindow';
@@ -311,6 +312,7 @@ const App: React.FC = () => {
             {/* Floating widgets */}
             <AiChat language={language} />
             <CommandMatrix isOpen={isMatrixOpen} onClose={() => setIsMatrixOpen(false)} language={language} />
+            <Analytics />
 
         </div>
     );
