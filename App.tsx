@@ -267,10 +267,12 @@ const App: React.FC = () => {
                                         <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
                                     </div>
                                 </div>
-                                {/* Visualizer — tall so animation breathes */}
-                                <div className="flex items-center justify-center relative" style={{ minHeight: 180, height: 'clamp(160px, 22vh, 240px)' }}>
-                                    <GitFlowVisualizer command={currentStep.command} language={language} />
-                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-cyber-bg/30 pointer-events-none" />
+                                {/* Visualizer — overflow-x-auto so it scrolls on mobile instead of clipping */}
+                                <div className="overflow-x-auto" style={{ minHeight: 180, height: 'clamp(160px, 22vh, 240px)' }}>
+                                    <div className="flex items-center justify-center relative h-full" style={{ minWidth: 420 }}>
+                                        <GitFlowVisualizer command={currentStep.command} language={language} />
+                                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-cyber-bg/30 pointer-events-none" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -15,11 +15,11 @@ export const UI_TEXT: Record<Language, any> = {
         objective: "Objetivo de la Fase",
         prev: "Anterior",
         next: "Siguiente Nodo",
-        completedTitle: "Sincronización Completa",
+        completedTitle: "¡Completado!",
         completedDesc: "Has completado el ciclo. Tu código ahora vive seguro en la nube de GitHub. ¡Has dominado el flujo básico de Git!",
         commandBreakdown: "Desglose del Comando",
-        matrixTitle: "MATRIZ DE PROTOCOLOS",
-        openMatrix: "Abrir Matriz",
+        matrixTitle: "GIT CHEATSHEET",
+        openMatrix: "Cheatsheet",
         terminal: {
             headerIntro: "SYSTEM_LOG",
             headerShell: "git-punk-shell",
@@ -60,11 +60,11 @@ export const UI_TEXT: Record<Language, any> = {
         objective: "Phase Objective",
         prev: "Previous",
         next: "Next Node",
-        completedTitle: "Sync Complete",
+        completedTitle: "Completed!",
         completedDesc: "Cycle complete. Your code now lives safely in the GitHub cloud. You have mastered the basic Git flow!",
         commandBreakdown: "Command Breakdown",
-        matrixTitle: "PROTOCOL MATRIX",
-        openMatrix: "Open Matrix",
+        matrixTitle: "GIT CHEATSHEET",
+        openMatrix: "Cheatsheet",
         terminal: {
             headerIntro: "SYSTEM_LOG",
             headerShell: "git-punk-shell",
@@ -579,39 +579,78 @@ export const CHEAT_SHEET_DATA: Record<Language, { category: string, commands: { 
         {
             category: "Configuración",
             commands: [
-                { cmd: 'git config --global user.name "Nombre"', desc: 'Define tu nombre de usuario.' },
-                { cmd: 'git config --global user.email "mail"', desc: 'Define tu correo.' }
+                { cmd: 'git config --global user.name "Nombre"', desc: 'Define tu nombre de usuario global.' },
+                { cmd: 'git config --global user.email "mail"', desc: 'Define tu correo global.' },
+                { cmd: 'git config --list', desc: 'Ver toda la configuración activa.' }
             ]
         },
         {
             category: "Inicio",
             commands: [
                 { cmd: 'git init', desc: 'Inicia un repositorio nuevo.' },
-                { cmd: 'git clone <url>', desc: 'Descarga un repo existente.' }
+                { cmd: 'git clone <url>', desc: 'Descarga un repo existente.' },
+                { cmd: 'git clone <url> .', desc: 'Clona en la carpeta actual.' }
             ]
         },
         {
-            category: "Cambios",
+            category: "Staging & Commits",
             commands: [
                 { cmd: 'git status', desc: 'Ver estado de archivos.' },
-                { cmd: 'git add .', desc: 'Prepara todo para guardar.' },
-                { cmd: 'git commit -m "msg"', desc: 'Guarda los cambios.' }
+                { cmd: 'git add .', desc: 'Prepara todos los cambios.' },
+                { cmd: 'git add <archivo>', desc: 'Prepara un archivo específico.' },
+                { cmd: 'git commit -m "msg"', desc: 'Guarda los cambios con mensaje.' },
+                { cmd: 'git commit --amend', desc: 'Edita el último commit.' }
+            ]
+        },
+        {
+            category: "Historial",
+            commands: [
+                { cmd: 'git log --oneline', desc: 'Historial compacto de commits.' },
+                { cmd: 'git log --graph', desc: 'Historial visual con ramas.' },
+                { cmd: 'git diff', desc: 'Ver cambios sin guardar.' },
+                { cmd: 'git diff HEAD', desc: 'Ver todos los cambios desde el último commit.' }
             ]
         },
         {
             category: "Ramas",
             commands: [
-                { cmd: 'git branch <nombre>', desc: 'Crea una nueva rama.' },
-                { cmd: 'git checkout <nombre>', desc: 'Cambia a otra rama.' },
-                { cmd: 'git merge <nombre>', desc: 'Fusiona rama con actual.' }
+                { cmd: 'git branch', desc: 'Listar ramas locales.' },
+                { cmd: 'git branch <nombre>', desc: 'Crear nueva rama.' },
+                { cmd: 'git switch <nombre>', desc: 'Cambiar a otra rama (moderno).' },
+                { cmd: 'git switch -c <nombre>', desc: 'Crear y cambiar a nueva rama.' },
+                { cmd: 'git merge <nombre>', desc: 'Fusionar rama con la actual.' },
+                { cmd: 'git branch -d <nombre>', desc: 'Eliminar rama fusionada.' }
             ]
         },
         {
             category: "Remoto",
             commands: [
-                { cmd: 'git push', desc: 'Sube cambios a la nube.' },
-                { cmd: 'git pull', desc: 'Baja cambios de la nube.' },
-                { cmd: 'git remote -v', desc: 'Ver urls remotas.' }
+                { cmd: 'git remote add origin <url>', desc: 'Conectar repo local con GitHub.' },
+                { cmd: 'git push -u origin main', desc: 'Primer push y establece tracking.' },
+                { cmd: 'git push', desc: 'Subir commits al remoto.' },
+                { cmd: 'git pull', desc: 'Bajar y fusionar cambios.' },
+                { cmd: 'git fetch', desc: 'Bajar cambios sin fusionar.' },
+                { cmd: 'git remote -v', desc: 'Ver URLs remotas configuradas.' }
+            ]
+        },
+        {
+            category: "Deshacer",
+            commands: [
+                { cmd: 'git restore <archivo>', desc: 'Descartar cambios en working dir.' },
+                { cmd: 'git restore --staged <archivo>', desc: 'Sacar archivo del staging.' },
+                { cmd: 'git reset --soft HEAD~1', desc: 'Deshacer commit, mantener cambios.' },
+                { cmd: 'git reset --hard HEAD~1', desc: '⚠️ Eliminar commit y cambios.' },
+                { cmd: 'git revert <sha>', desc: 'Revertir commit sin borrar historial.' }
+            ]
+        },
+        {
+            category: "Avanzado",
+            commands: [
+                { cmd: 'git stash', desc: 'Guardar cambios temporalmente.' },
+                { cmd: 'git stash pop', desc: 'Recuperar cambios guardados.' },
+                { cmd: 'git cherry-pick <sha>', desc: 'Aplicar un commit específico.' },
+                { cmd: 'git rebase <rama>', desc: 'Reescribir historial sobre otra rama.' },
+                { cmd: 'git tag v1.0.0', desc: 'Crear etiqueta de versión.' }
             ]
         }
     ],
@@ -619,39 +658,78 @@ export const CHEAT_SHEET_DATA: Record<Language, { category: string, commands: { 
         {
             category: "Setup",
             commands: [
-                { cmd: 'git config --global user.name "Name"', desc: 'Sets your username.' },
-                { cmd: 'git config --global user.email "mail"', desc: 'Sets your email.' }
+                { cmd: 'git config --global user.name "Name"', desc: 'Set your global username.' },
+                { cmd: 'git config --global user.email "mail"', desc: 'Set your global email.' },
+                { cmd: 'git config --list', desc: 'View all active config.' }
             ]
         },
         {
             category: "Start",
             commands: [
                 { cmd: 'git init', desc: 'Initialize new repo.' },
-                { cmd: 'git clone <url>', desc: 'Download existing repo.' }
+                { cmd: 'git clone <url>', desc: 'Download existing repo.' },
+                { cmd: 'git clone <url> .', desc: 'Clone into current folder.' }
             ]
         },
         {
-            category: "Changes",
+            category: "Staging & Commits",
             commands: [
                 { cmd: 'git status', desc: 'Check file status.' },
-                { cmd: 'git add .', desc: 'Stage all files.' },
-                { cmd: 'git commit -m "msg"', desc: 'Save changes.' }
+                { cmd: 'git add .', desc: 'Stage all changes.' },
+                { cmd: 'git add <file>', desc: 'Stage a specific file.' },
+                { cmd: 'git commit -m "msg"', desc: 'Save changes with message.' },
+                { cmd: 'git commit --amend', desc: 'Edit the last commit.' }
+            ]
+        },
+        {
+            category: "History",
+            commands: [
+                { cmd: 'git log --oneline', desc: 'Compact commit history.' },
+                { cmd: 'git log --graph', desc: 'Visual branch history.' },
+                { cmd: 'git diff', desc: 'View unstaged changes.' },
+                { cmd: 'git diff HEAD', desc: 'All changes since last commit.' }
             ]
         },
         {
             category: "Branches",
             commands: [
+                { cmd: 'git branch', desc: 'List local branches.' },
                 { cmd: 'git branch <name>', desc: 'Create new branch.' },
-                { cmd: 'git checkout <name>', desc: 'Switch branch.' },
-                { cmd: 'git merge <name>', desc: 'Merge branch into current.' }
+                { cmd: 'git switch <name>', desc: 'Switch branch (modern).' },
+                { cmd: 'git switch -c <name>', desc: 'Create and switch to new branch.' },
+                { cmd: 'git merge <name>', desc: 'Merge branch into current.' },
+                { cmd: 'git branch -d <name>', desc: 'Delete merged branch.' }
             ]
         },
         {
             category: "Remote",
             commands: [
-                { cmd: 'git push', desc: 'Upload changes.' },
-                { cmd: 'git pull', desc: 'Download changes.' },
-                { cmd: 'git remote -v', desc: 'View remote urls.' }
+                { cmd: 'git remote add origin <url>', desc: 'Connect local repo to GitHub.' },
+                { cmd: 'git push -u origin main', desc: 'First push and set tracking.' },
+                { cmd: 'git push', desc: 'Upload commits to remote.' },
+                { cmd: 'git pull', desc: 'Download and merge changes.' },
+                { cmd: 'git fetch', desc: 'Download without merging.' },
+                { cmd: 'git remote -v', desc: 'View configured remote URLs.' }
+            ]
+        },
+        {
+            category: "Undo",
+            commands: [
+                { cmd: 'git restore <file>', desc: 'Discard working dir changes.' },
+                { cmd: 'git restore --staged <file>', desc: 'Unstage a file.' },
+                { cmd: 'git reset --soft HEAD~1', desc: 'Undo commit, keep changes.' },
+                { cmd: 'git reset --hard HEAD~1', desc: '⚠️ Delete commit and changes.' },
+                { cmd: 'git revert <sha>', desc: 'Revert commit without losing history.' }
+            ]
+        },
+        {
+            category: "Advanced",
+            commands: [
+                { cmd: 'git stash', desc: 'Save changes temporarily.' },
+                { cmd: 'git stash pop', desc: 'Restore stashed changes.' },
+                { cmd: 'git cherry-pick <sha>', desc: 'Apply a specific commit.' },
+                { cmd: 'git rebase <branch>', desc: 'Rewrite history on top of branch.' },
+                { cmd: 'git tag v1.0.0', desc: 'Create a version tag.' }
             ]
         }
     ]
