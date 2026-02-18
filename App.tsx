@@ -27,7 +27,7 @@ const App: React.FC = () => {
     // Get current data based on language
     const steps = TUTORIAL_CONTENT[language];
     const ui = UI_TEXT[language];
-    
+
     const currentStep = steps[currentStepIndex];
     const isFirstStep = currentStepIndex === 0;
     const isLastStep = currentStepIndex === steps.length - 1;
@@ -101,7 +101,7 @@ const App: React.FC = () => {
             setCurrentStepIndex(prev => prev - 1);
         }
     };
-    
+
     const handleStepClick = (stepId: number) => {
         playSfx.click();
         setCurrentStepIndex(stepId - 1);
@@ -120,16 +120,16 @@ const App: React.FC = () => {
 
     return (
         <div className="min-h-screen font-sans selection:bg-cyber-cyan/30 selection:text-white overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
-            
+
             {/* Background Layers */}
             <div className="fixed inset-0 z-0 bg-cyber-bg transition-colors duration-300"></div>
-            <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]" 
-                 style={{ 
-                     backgroundImage: `linear-gradient(${theme === 'dark' ? 'rgba(255,255,255, 0.1)' : 'rgba(0,0,0, 0.1)'} 1px, transparent 1px), linear-gradient(90deg, ${theme === 'dark' ? 'rgba(255,255,255, 0.1)' : 'rgba(0,0,0, 0.1)'} 1px, transparent 1px)`, 
-                     backgroundSize: '50px 50px' 
-                 }}>
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]"
+                style={{
+                    backgroundImage: `linear-gradient(${theme === 'dark' ? 'rgba(255,255,255, 0.1)' : 'rgba(0,0,0, 0.1)'} 1px, transparent 1px), linear-gradient(90deg, ${theme === 'dark' ? 'rgba(255,255,255, 0.1)' : 'rgba(0,0,0, 0.1)'} 1px, transparent 1px)`,
+                    backgroundSize: '50px 50px'
+                }}>
             </div>
-            
+
             {/* Sidebar Navigation - Roadmap Style */}
             <aside className="w-full md:w-80 h-auto md:h-screen flex flex-col bg-cyber-panel/90 border-r border-cyber-border z-20 md:backdrop-blur-xl transition-colors duration-300">
                 <div className="p-6 border-b border-cyber-border bg-cyber-bg flex justify-between items-start">
@@ -147,11 +147,11 @@ const App: React.FC = () => {
                             {ui.roadmap}
                         </div>
                     </div>
-                    
+
                     {/* Controls Row */}
                     <div className="flex gap-1">
                         {/* Theme Toggle */}
-                        <button 
+                        <button
                             onClick={toggleTheme}
                             className="p-2 rounded hover:bg-cyber-text/5 text-cyber-muted hover:text-cyber-text transition-colors"
                             title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
@@ -160,7 +160,7 @@ const App: React.FC = () => {
                         </button>
 
                         {/* Language Switcher */}
-                        <button 
+                        <button
                             onClick={() => { playSfx.click(); setLanguage(l => l === 'es' ? 'en' : 'es'); }}
                             className="p-2 rounded hover:bg-cyber-text/5 text-cyber-muted hover:text-cyber-text transition-colors"
                             title="Change Language"
@@ -186,9 +186,9 @@ const App: React.FC = () => {
                                         {steps.map((step) => {
                                             const isActive = step.id === currentStep.id;
                                             const isCompleted = step.id < currentStep.id;
-                                            
+
                                             return (
-                                                <button 
+                                                <button
                                                     key={step.id}
                                                     id={`step-${step.id}`}
                                                     onClick={() => handleStepClick(step.id)}
@@ -196,13 +196,12 @@ const App: React.FC = () => {
                                                     className={`w-full text-left group relative pl-10 pr-2 py-1 transition-all duration-300`}
                                                 >
                                                     {/* Node on the line */}
-                                                    <div className={`absolute left-[22px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 transition-all duration-300 z-10 ${
-                                                        isActive 
-                                                            ? 'bg-cyber-cyan border-cyber-cyan shadow-[0_0_10px_#06b6d4] scale-125' 
-                                                            : isCompleted 
-                                                                ? 'bg-cyber-panel border-cyber-green text-cyber-green' 
+                                                    <div className={`absolute left-[22px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 transition-all duration-300 z-10 ${isActive
+                                                            ? 'bg-cyber-cyan border-cyber-cyan shadow-[0_0_10px_#06b6d4] scale-125'
+                                                            : isCompleted
+                                                                ? 'bg-cyber-panel border-cyber-green text-cyber-green'
                                                                 : 'bg-cyber-panel border-cyber-muted'
-                                                    }`}>
+                                                        }`}>
                                                         {isCompleted && <div className="absolute inset-0 flex items-center justify-center"><Check size={8} /></div>}
                                                         {isActive && <div className="absolute inset-0 flex items-center justify-center"><div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div></div>}
                                                     </div>
@@ -224,8 +223,8 @@ const App: React.FC = () => {
 
                 {/* Sidebar Footer - Credits */}
                 <div className="hidden md:flex flex-col items-center justify-center p-4 border-t border-cyber-border bg-cyber-bg gap-2">
-                     {/* Sound Toggle */}
-                     <button 
+                    {/* Sound Toggle */}
+                    <button
                         onClick={handleToggleMute}
                         className="flex items-center gap-2 text-[10px] text-cyber-muted hover:text-cyber-cyan transition-colors mb-2 uppercase font-mono tracking-wider"
                     >
@@ -233,9 +232,9 @@ const App: React.FC = () => {
                         {muted ? 'Audio: Muted' : 'Audio: Active'}
                     </button>
 
-                    <a 
-                        href="https://github.com/herwingx" 
-                        target="_blank" 
+                    <a
+                        href="https://github.com/herwingx"
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="group flex items-center gap-2 px-4 py-2 rounded-full bg-cyber-text/5 hover:bg-cyber-text/10 transition-all border border-transparent hover:border-cyber-cyan/20 w-full justify-center"
                     >
@@ -244,7 +243,7 @@ const App: React.FC = () => {
                         <Heart size={10} className="text-red-500 fill-red-500/20 animate-pulse" />
                     </a>
                 </div>
-                
+
                 {/* Mobile Progress */}
                 <div className="md:hidden h-1 bg-cyber-border w-full">
                     <div className="h-full bg-gradient-to-r from-cyber-cyan to-cyber-purple transition-all duration-300" style={{ width: `${progressPercentage}%` }}></div>
@@ -253,10 +252,10 @@ const App: React.FC = () => {
 
             {/* Main Content */}
             <main className="flex-1 relative overflow-hidden flex flex-col h-[calc(100vh-60px)] md:h-screen transition-colors duration-300">
-                
+
                 {/* Top Bar Actions (Stars + Matrix) */}
                 <div className="absolute top-4 right-4 md:top-8 md:right-8 z-30 flex items-center gap-3">
-                    
+
                     {/* Command Matrix Button */}
                     <button
                         onClick={() => { playSfx.click(); setIsMatrixOpen(true); }}
@@ -267,9 +266,9 @@ const App: React.FC = () => {
                     </button>
 
                     {/* Repo Link */}
-                    <a 
-                        href="https://github.com/herwingx/GitPunk" 
-                        target="_blank" 
+                    <a
+                        href="https://github.com/herwingx/GitPunk"
+                        target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => playSfx.click()}
                         className="flex items-center gap-0 bg-cyber-panel/80 backdrop-blur-md border border-cyber-border rounded-lg overflow-hidden group hover:border-cyber-text transition-all shadow-lg"
@@ -286,10 +285,10 @@ const App: React.FC = () => {
                         </div>
                     </a>
                 </div>
-                
+
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-12 pb-32">
                     <div className="max-w-4xl mx-auto w-full">
-                        
+
                         {/* Header Tags */}
                         <div className="flex flex-wrap gap-3 mb-6 items-center animate-fade-in-up">
                             <span className="px-3 py-1 rounded-full text-[10px] font-bold font-display tracking-wider bg-cyber-panel border border-cyber-border text-cyber-muted uppercase backdrop-blur-sm shadow-sm">
@@ -326,14 +325,14 @@ const App: React.FC = () => {
 
                             {/* Conditional Rendering: GitFlow Visualizer or Static Icon */}
                             <div className="bg-cyber-panel border border-cyber-cyan/20 rounded-xl p-6 flex flex-col shadow-lg relative overflow-hidden justify-center items-center text-center">
-                                
+
                                 {showVisualizer ? (
                                     <div className="h-24 md:h-32 w-full mb-4 relative z-10 flex items-center justify-center">
                                         <GitFlowVisualizer command={currentStep.command} language={language} />
                                     </div>
                                 ) : (
                                     <div className="h-24 md:h-32 w-full mb-4 relative z-10 flex items-center justify-center opacity-80">
-                                         <StepIcon size={80} strokeWidth={1} className="text-cyber-cyan drop-shadow-[0_0_10px_rgba(6,182,212,0.3)]" />
+                                        <StepIcon size={80} strokeWidth={1} className="text-cyber-cyan drop-shadow-[0_0_10px_rgba(6,182,212,0.3)]" />
                                     </div>
                                 )}
 
@@ -351,52 +350,52 @@ const App: React.FC = () => {
 
                         {/* Interactive Terminal */}
                         <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                            <TerminalWindow 
-                                command={currentStep.command} 
+                            <TerminalWindow
+                                command={currentStep.command}
                                 stepId={currentStep.id}
                                 category={currentStep.category}
                                 language={language}
-                                onComplete={() => {}} 
+                                onComplete={() => { }}
                             />
 
                             {/* Command Breakdown */}
                             {currentStep.flagDetails && currentStep.flagDetails.length > 0 && (
                                 <div className="mt-6 bg-cyber-panel/40 border border-cyber-border rounded-xl p-5 backdrop-blur-sm relative overflow-hidden">
-                                     <div className="absolute left-0 top-0 w-1 h-full bg-cyber-purple/50"></div>
-                                     <h3 className="text-xs font-bold font-display text-cyber-purple uppercase tracking-widest mb-4 flex items-center gap-2">
-                                         <Info size={14} />
-                                         {ui.commandBreakdown}
-                                     </h3>
-                                     <div className="grid gap-3">
-                                         {currentStep.flagDetails.map((item, idx) => (
-                                             <div key={idx} className="flex items-start gap-4 text-sm group">
-                                                 <div className="min-w-[4rem] md:min-w-[6rem] text-center">
-                                                     <span className="inline-block w-full py-1 px-2 rounded bg-cyber-purple/10 border border-cyber-purple/30 text-cyber-purpleGlow font-mono text-xs font-bold shadow-[0_0_10px_rgba(139,92,246,0.1)] group-hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] transition-all">
-                                                         {item.flag}
-                                                     </span>
-                                                 </div>
-                                                 <p className="text-cyber-muted font-light leading-relaxed pt-0.5">
-                                                     {item.description}
-                                                 </p>
-                                             </div>
-                                         ))}
-                                     </div>
+                                    <div className="absolute left-0 top-0 w-1 h-full bg-cyber-purple/50"></div>
+                                    <h3 className="text-xs font-bold font-display text-cyber-purple uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <Info size={14} />
+                                        {ui.commandBreakdown}
+                                    </h3>
+                                    <div className="grid gap-3">
+                                        {currentStep.flagDetails.map((item, idx) => (
+                                            <div key={idx} className="flex items-start gap-4 text-sm group">
+                                                <div className="min-w-[4rem] md:min-w-[6rem] text-center">
+                                                    <span className="inline-block w-full py-1 px-2 rounded bg-cyber-purple/10 border border-cyber-purple/30 text-cyber-purpleGlow font-mono text-xs font-bold shadow-[0_0_10px_rgba(139,92,246,0.1)] group-hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] transition-all">
+                                                        {item.flag}
+                                                    </span>
+                                                </div>
+                                                <p className="text-cyber-muted font-light leading-relaxed pt-0.5">
+                                                    {item.description}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
 
                         {/* Navigation Footer */}
                         <div className="flex items-center justify-between mt-auto pt-6 border-t border-cyber-border">
-                            <CyberButton 
-                                variant="secondary" 
-                                onClick={handlePrev} 
+                            <CyberButton
+                                variant="secondary"
+                                onClick={handlePrev}
                                 disabled={isFirstStep}
                             >
                                 {ui.prev}
                             </CyberButton>
 
-                            <CyberButton 
-                                onClick={handleNext} 
+                            <CyberButton
+                                onClick={handleNext}
                                 disabled={isLastStep}
                             >
                                 {isLastStep ? ui.completedTitle : ui.next}
@@ -405,15 +404,15 @@ const App: React.FC = () => {
                     </div>
                 </div>
             </main>
-            
+
             {/* AI Assistant Chat - Fixed Bottom Right */}
             <AiChat language={language} />
 
             {/* Matrix Modal */}
-            <CommandMatrix 
-                isOpen={isMatrixOpen} 
-                onClose={() => setIsMatrixOpen(false)} 
-                language={language} 
+            <CommandMatrix
+                isOpen={isMatrixOpen}
+                onClose={() => setIsMatrixOpen(false)}
+                language={language}
             />
 
         </div>

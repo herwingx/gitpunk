@@ -13,9 +13,23 @@ const initAudio = () => {
         masterGain.connect(audioCtx.destination);
     }
     if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+        audioCtx.resume().catch(err => console.warn("AudioContext resume failed:", err));
     }
 };
+
+// Auto-init on first real user interaction to satisfy browser policies
+if (typeof window !== 'undefined') {
+    const unlockAudio = () => {
+        initAudio();
+        window.removeEventListener('click', unlockAudio);
+        window.removeEventListener('keydown', unlockAudio);
+        window.removeEventListener('touchstart', unlockAudio);
+    };
+    window.addEventListener('click', unlockAudio);
+    window.addEventListener('keydown', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio);
+}
+
 
 export const toggleMute = () => {
     isMuted = !isMuted;
@@ -30,7 +44,7 @@ const createOscillator = (type: OscillatorType, freq: number, duration: number, 
 
     osc.type = type;
     osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
-    
+
     gain.gain.setValueAtTime(volume, audioCtx.currentTime + delay);
     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + duration);
 
