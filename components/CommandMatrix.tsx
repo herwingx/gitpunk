@@ -18,18 +18,18 @@ const CommandMatrix: React.FC<CommandMatrixProps> = ({ isOpen, onClose, language
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             {/* Backdrop */}
-            <div 
-                className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity animate-fade-in-up" 
+            <div
+                className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity animate-fade-in-up"
                 onClick={onClose}
             ></div>
 
             {/* Modal */}
             <div className="bg-cyber-panel border border-cyber-cyan/30 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden relative shadow-[0_0_50px_rgba(6,182,212,0.15)] flex flex-col animate-scale-in">
-                
+
                 {/* Header */}
                 <div className="p-5 border-b border-cyber-border bg-cyber-bg/95 flex justify-between items-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-cyan opacity-50 animate-shimmer"></div>
-                    
+
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-cyber-cyan/10 rounded-lg border border-cyber-cyan/30">
                             <Database size={20} className="text-cyber-cyan" />
@@ -40,7 +40,7 @@ const CommandMatrix: React.FC<CommandMatrixProps> = ({ isOpen, onClose, language
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         onClick={onClose}
                         className="p-2 hover:bg-cyber-text/10 rounded-full transition-colors text-cyber-muted hover:text-cyber-text"
                     >
@@ -57,7 +57,7 @@ const CommandMatrix: React.FC<CommandMatrixProps> = ({ isOpen, onClose, language
                                     <Shield size={10} />
                                     {section.category}
                                 </span>
-                                <span className="text-[9px] text-cyber-muted font-mono">SEC_0{idx+1}</span>
+                                <span className="text-[9px] text-cyber-muted font-mono">SEC_0{idx + 1}</span>
                             </div>
                             <div className="p-3 space-y-3">
                                 {section.commands.map((item, cIdx) => (
@@ -78,8 +78,8 @@ const CommandMatrix: React.FC<CommandMatrixProps> = ({ isOpen, onClose, language
                 {/* Footer Decor */}
                 <div className="p-3 bg-cyber-bg border-t border-cyber-border flex justify-between items-center text-[10px] text-cyber-muted font-mono">
                     <div className="flex items-center gap-2">
-                         <span className="w-1.5 h-1.5 bg-cyber-green rounded-full animate-pulse"></span>
-                         DATABASE_CONNECTED
+                        <span className="w-1.5 h-1.5 bg-cyber-green rounded-full animate-pulse"></span>
+                        DATABASE_CONNECTED
                     </div>
                     <div>V.2.0.77</div>
                 </div>

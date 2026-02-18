@@ -1,243 +1,266 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { OsCommand, Language } from '../types';
-import { UI_TEXT } from '../constants';
-import { Terminal, Laptop, Server, Copy, Check, Info, Lock } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Copy, Check, Terminal, RotateCcw, Play } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { OsCommand, Language } from '../types';
 import { playSfx } from '../utils/soundEngine';
 
 interface TerminalWindowProps {
     command: string | OsCommand;
     stepId: number;
-    category?: string;
+    category: string;
     language: Language;
     onComplete: () => void;
 }
 
 type OsType = 'windows' | 'linux';
-type ExecStatus = 'typing' | 'completed';
 
-const TerminalWindow: React.FC<TerminalWindowProps> = ({ command, stepId, category, language, onComplete }) => {
-    const [displayedCommand, setDisplayedCommand] = useState('');
-    const [status, setStatus] = useState<ExecStatus>('typing');
+const TerminalWindow: React.FC<TerminalWindowProps> = ({ command, stepId, language, onComplete }) => {
     const [activeOs, setActiveOs] = useState<OsType>('windows');
-    const [copied, setCopied] = useState(false);
-    
-    // Refs for cleanup
-    const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const startTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const terminalRef = useRef<HTMLDivElement>(null);
+    const cmdString = typeof command === 'string'
+        ? command
+        : (command[activeOs === 'windows' ? 'windows' : 'linux'] ?? '');
 
-    const isIntro = category === UI_TEXT[language].terminal.headerIntro || category === "CONCEPTOS CLAVE" || category === "KEY CONCEPTS"; 
-    const isMultiOs = typeof command !== 'string';
-    const currentCommandString = isMultiOs ? (command as OsCommand)[activeOs] : (command as string);
-    const ui = UI_TEXT[language].terminal;
+    const [typed, setTyped] = useState('');
+    const [isCompleted, setIsCompleted] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
-    // Determine syntax highlighter language
-    const getSyntaxLanguage = () => {
-        if (isIntro) return 'text';
-        if (activeOs === 'windows') return 'powershell';
-        return 'bash';
-    };
-
-    // Helper to generate mock output based on command
-    const getMockOutput = (cmd: string): string => {
-        if (cmd.includes('git init')) return `Initialized empty Git repository in /Users/dev/CyberProfile/.git/`;
-        if (cmd.includes('git status')) return `On branch main\nNo commits yet\n\nUntracked files:\n  (use "git add <file>..." to include in what will be committed)\n\tindex.html`;
-        if (cmd.includes('git commit')) return `[main (root-commit) 1a2b3c] ${cmd.split('-m')[1]?.replace(/"/g, '') || 'commit'}\n 1 file changed, 1 insertion(+)`;
-        if (cmd.includes('git push')) return `Enumerating objects: 3, done.\nCounting objects: 100% (3/3), done.\nTo https://github.com/repo.git\n * [new branch]      main -> main`;
-        if (cmd.includes('npm run build')) return `> cyber-profile@1.0.0 build\n> vite build\n\n✓ built in 1.45s`;
-        if (cmd.includes('mkdir')) return '';
-        if (cmd.includes('echo')) return '';
-        return language === 'es' ? 'Comando ejecutado exitosamente.' : 'Command executed successfully.';
-    };
-
-    // Typing Animation Logic
+    // Auto-scroll
     useEffect(() => {
-        // Reset state on step change
-        if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-        if (startTimeoutRef.current) clearTimeout(startTimeoutRef.current);
-        
-        setDisplayedCommand('');
-        setStatus('typing');
+        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }, [typed, isCompleted]);
 
-        startTimeoutRef.current = setTimeout(() => {
-            let i = 0;
-            const fullText = currentCommandString;
-            
-            typingIntervalRef.current = setInterval(() => {
-                if (i < fullText.length) {
-                    setDisplayedCommand(fullText.substring(0, i + 1));
-                    
-                    // SFX: Play random typing beep every 3rd character to not be annoying
-                    if (i % 3 === 0) playSfx.typing();
-                    
-                    i++;
-                } else {
-                    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-                    
-                    // Automatically complete when typing finishes
-                    setStatus('completed');
-                    playSfx.success(); // Success chime
-                    onComplete();
-                }
-            }, 30); 
-        }, 200);
+    // Typing animation
+    useEffect(() => {
+        setTyped('');
+        setIsCompleted(false);
+        let i = 0;
+        const iv = setInterval(() => {
+            if (i <= cmdString.length) {
+                setTyped(cmdString.slice(0, i));
+                i++;
+                if (i % 4 === 0 && typeof playSfx !== 'undefined') playSfx.typing();
+            } else {
+                clearInterval(iv);
+                setIsCompleted(true);
+                onComplete();
+                if (typeof playSfx !== 'undefined') playSfx.success();
+            }
+        }, 35);
+        return () => clearInterval(iv);
+    }, [cmdString, stepId]);
 
-        return () => {
-            if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-            if (startTimeoutRef.current) clearTimeout(startTimeoutRef.current);
-        };
-    }, [currentCommandString, stepId, activeOs, isIntro, onComplete]);
-
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(currentCommandString);
-            playSfx.click();
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy', err);
-        }
+    const handleCopy = () => {
+        navigator.clipboard.writeText(cmdString);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
     };
 
-    const handleOsChange = (os: OsType) => {
-        playSfx.click();
-        setActiveOs(os);
-    }
+    const handleReplay = () => {
+        setTyped('');
+        setIsCompleted(false);
+    };
 
-    const promptText = isIntro 
-        ? <span className="text-cyber-cyan">SYSTEM@CORE:~/CONCEPTS$</span>
-        : <span>{activeOs === 'windows' ? 'PS C:\\Users\\Dev\\CyberProfile>' : 'dev@cyberdeck:~/CyberProfile$'}</span>;
+    const getPrompt = () => activeOs === 'windows'
+        ? <span style={{ color: '#3b8eea', userSelect: 'none', marginRight: 8, flexShrink: 0 }}>PS C:\Dev\Project&gt;</span>
+        : <span style={{ color: '#4ade80', userSelect: 'none', marginRight: 8, flexShrink: 0 }}>user@dev:~$</span>;
+
+    const getFakeOutput = (cmd: string) => {
+        if (!cmd) return null;
+        if (cmd.includes('git init')) return <div style={{ color: '#6b7280', marginTop: 4, fontStyle: 'italic' }}>Initialized empty Git repository in ~/project/.git/</div>;
+        if (cmd.includes('git status')) return <div style={{ color: '#6b7280', marginTop: 4 }}>On branch main<br />nothing to commit, working tree clean</div>;
+        if (cmd.includes('commit')) return <div style={{ color: '#6b7280', marginTop: 4 }}>[main abc1234] {cmd.split('-m')[1]?.replace(/['"]/g, '').trim() || 'update'}<br />1 file changed, 1 insertion(+)</div>;
+        if (cmd.includes('push')) return <div style={{ color: '#6b7280', marginTop: 4 }}>Branch 'main' set up to track remote branch 'main' from 'origin'.<br />Everything up-to-date</div>;
+        return null;
+    };
 
     return (
-        <div className="w-full mx-auto my-8 relative group" ref={terminalRef}>
-            {/* Ambient Glow */}
-            <div className={`absolute -inset-0.5 bg-gradient-to-r from-cyber-cyan/30 to-cyber-purple/30 rounded-xl blur opacity-30 transition duration-1000 group-hover:opacity-60`}></div>
-            
-            <div className="relative bg-cyber-panel border border-cyber-border rounded-xl overflow-hidden shadow-2xl backdrop-blur-sm">
-                
-                {/* Terminal Header */}
-                <div className="bg-[#18181b] px-4 py-3 flex flex-col md:flex-row md:items-center justify-between border-b border-cyber-border gap-3">
-                    <div className="flex items-center gap-4">
-                        <div className="flex gap-2">
-                            <div className="w-3 h-3 rounded-full bg-red-500/50 hover:bg-red-500 transition-colors"></div>
-                            <div className="w-3 h-3 rounded-full bg-yellow-500/50 hover:bg-yellow-500 transition-colors"></div>
-                            <div className="w-3 h-3 rounded-full bg-green-500/50 hover:bg-green-500 transition-colors"></div>
-                        </div>
-                        
-                        <div className="text-xs text-cyber-muted font-mono flex items-center gap-2 opacity-60">
-                            <Terminal size={12} />
-                            <span>{isIntro ? ui.headerIntro : ui.headerShell}</span>
-                        </div>
+        <div style={{
+            width: '100%', height: '100%',
+            display: 'flex', flexDirection: 'column',
+            background: '#141414',
+            borderRadius: 14,
+            border: '1px solid rgba(255,255,255,0.08)',
+            overflow: 'hidden',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: 13,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+        }}>
+
+            {/* ── Title bar ─────────────────────────────────────────────── */}
+            <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px',
+                background: '#1c1c1c',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                flexShrink: 0,
+            }}>
+                {/* Left: dots + title */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                        <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#ff5f56' }} />
+                        <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#ffbd2e' }} />
+                        <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#27c93f' }} />
                     </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>
+                        <Terminal size={11} />
+                        <span>bash — 80×24</span>
+                    </div>
+                </div>
 
-                    <div className="flex items-center gap-3 self-end md:self-auto">
-                        {!isIntro && (
-                            <div className="flex items-center gap-3 bg-cyber-bg/20 rounded-lg p-1 border border-cyber-border/50">
-                                <span className="hidden md:flex text-[10px] uppercase font-bold text-cyber-muted px-2 items-center gap-1">
-                                    <Info size={10} />
-                                    {activeOs === 'windows' ? ui.openWin : ui.openUnix}
-                                </span>
-                                <div className="flex bg-[#09090b] rounded-md p-0.5 border border-cyber-border">
-                                    <button 
-                                        onClick={() => handleOsChange('windows')}
-                                        className={`flex items-center gap-2 px-2 py-1 rounded transition-all text-xs font-medium ${activeOs === 'windows' ? 'bg-cyber-cyan/20 text-cyber-cyan shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
-                                        title="Windows (PowerShell)"
-                                    >
-                                        <Laptop size={14} />
-                                        <span>Win</span>
-                                    </button>
-                                    <button 
-                                        onClick={() => handleOsChange('linux')}
-                                        className={`flex items-center gap-2 px-2 py-1 rounded transition-all text-xs font-medium ${activeOs === 'linux' ? 'bg-cyber-purple/20 text-cyber-purple shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
-                                        title="Linux / macOS (Bash)"
-                                    >
-                                        <Server size={14} />
-                                        <span>Mac/Linux</span>
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {!isIntro ? (
+                {/* Right: OS toggle + actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {/* OS toggle */}
+                    <div style={{
+                        display: 'flex', background: '#0d0d0d',
+                        borderRadius: 7, padding: 2,
+                        border: '1px solid rgba(255,255,255,0.07)',
+                    }}>
+                        {(['windows', 'linux'] as OsType[]).map(os => (
                             <button
-                                onClick={handleCopy}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-xs text-gray-300 font-mono"
-                                title={ui.copy}
+                                key={os}
+                                onClick={() => setActiveOs(os)}
+                                style={{
+                                    padding: '2px 10px', borderRadius: 5,
+                                    fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+                                    border: 'none', cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    background: activeOs === os
+                                        ? (os === 'windows' ? '#3b8eea' : '#ffbd2e')
+                                        : 'transparent',
+                                    color: activeOs === os
+                                        ? (os === 'windows' ? '#fff' : '#000')
+                                        : 'rgba(255,255,255,0.35)',
+                                }}
                             >
-                                {copied ? <Check size={14} className="text-cyber-green" /> : <Copy size={14} />}
-                                <span className="hidden sm:inline">{copied ? ui.copied : ui.copy}</span>
+                                {os === 'windows' ? 'WIN' : 'LINUX'}
                             </button>
-                        ) : (
-                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/5 border border-white/5 text-xs text-gray-500 font-mono">
-                                <Lock size={12} />
-                                <span>{ui.readOnly}</span>
-                            </div>
+                        ))}
+                    </div>
+
+                    <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)' }} />
+
+                    <button onClick={handleReplay} title="Replay"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', padding: 4, borderRadius: 5, display: 'flex', alignItems: 'center' }}
+                        onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+                    >
+                        <RotateCcw size={13} />
+                    </button>
+                    <button onClick={handleCopy} title="Copy"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: isCopied ? '#4ade80' : 'rgba(255,255,255,0.35)', padding: 4, borderRadius: 5, display: 'flex', alignItems: 'center' }}
+                        onMouseEnter={e => { if (!isCopied) e.currentTarget.style.color = '#fff'; }}
+                        onMouseLeave={e => { if (!isCopied) e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; }}
+                    >
+                        {isCopied ? <Check size={13} /> : <Copy size={13} />}
+                    </button>
+                </div>
+            </div>
+
+            {/* ── Terminal body ──────────────────────────────────────────── */}
+            <div
+                ref={scrollRef}
+                style={{
+                    flex: 1, overflowY: 'auto', padding: '16px 18px',
+                    background: '#141414',
+                    minHeight: 160,
+                }}
+            >
+                {/* Active command line */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    {getPrompt()}
+                    <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
+                        <SyntaxHighlighter
+                            language="bash"
+                            style={atomDark}
+                            customStyle={{
+                                background: 'transparent', padding: 0, margin: 0,
+                                display: 'inline', fontSize: 'inherit',
+                                lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+                            }}
+                            codeTagProps={{ style: { fontFamily: 'inherit' } }}
+                        >
+                            {typed || ' '}
+                        </SyntaxHighlighter>
+                        {!isCompleted && (
+                            <span style={{
+                                display: 'inline-block', width: 9, height: 18,
+                                background: 'rgba(255,255,255,0.7)',
+                                verticalAlign: 'middle', marginLeft: 1,
+                                animation: 'term-blink 1s step-end infinite',
+                            }} />
                         )}
                     </div>
                 </div>
 
-                {/* Terminal Body - Always Dark for Code Readability */}
-                <div className="p-6 font-mono text-sm md:text-base min-h-[160px] flex flex-col bg-[#0c0c10] relative">
-                    
-                    {/* Command Line */}
-                    <div className="w-full mb-2">
-                        <div className="flex gap-3 text-cyber-green mb-1 opacity-60 text-xs md:text-sm select-none">
-                            {promptText}
+                {/* Output */}
+                {isCompleted && (
+                    <div style={{ marginTop: 4, animation: 'term-fadein 0.3s ease forwards' }}>
+                        {getFakeOutput(cmdString)}
+                        <div style={{ display: 'flex', alignItems: 'center', marginTop: 8 }}>
+                            {getPrompt()}
+                            <span style={{
+                                display: 'inline-block', width: 9, height: 18,
+                                background: 'rgba(255,255,255,0.7)',
+                                verticalAlign: 'middle',
+                                animation: 'term-blink 1s step-end infinite',
+                            }} />
                         </div>
-                        <div className="flex flex-wrap items-center font-medium break-all relative">
-                            {status !== 'typing' && <span className="mr-3 text-cyber-purple font-bold select-none">❯</span>}
-                            
-                            <SyntaxHighlighter
-                                language={getSyntaxLanguage()}
-                                style={atomDark}
-                                customStyle={{
-                                    background: 'transparent',
-                                    padding: 0,
-                                    margin: 0,
-                                    lineHeight: 'inherit',
-                                    fontSize: 'inherit',
-                                    display: 'inline',
-                                    textShadow: '0 0 10px rgba(34,211,238,0.2)' 
-                                }}
-                                codeTagProps={{
-                                    style: { fontFamily: 'inherit' }
-                                }}
-                                PreTag="span"
-                            >
-                                {displayedCommand}
-                            </SyntaxHighlighter>
-
-                            {/* Cursor */}
-                            <span className={`w-2 h-5 bg-cyber-cyan ml-1 ${status === 'typing' ? 'opacity-100' : 'animate-pulse'}`}></span>
-                        </div>
-                    </div>
-
-                    {/* Output (Completed State) */}
-                    {status === 'completed' && !isIntro && (
-                        <div className="mt-2 animate-fade-in-up text-gray-400 text-xs md:text-sm leading-relaxed whitespace-pre-wrap opacity-80 border-l-2 border-cyber-border pl-3 ml-1">
-                            {getMockOutput(currentCommandString)}
-                        </div>
-                    )}
-
-                     {/* New Prompt Line (Completed State) */}
-                     {status === 'completed' && (
-                        <div className="mt-4 pt-2 border-t border-white/5 opacity-50 flex gap-3 text-cyber-green text-xs md:text-sm select-none">
-                            {promptText}
-                            <span className="w-2 h-5 bg-cyber-cyan/50"></span>
-                        </div>
-                    )}
-
-                </div>
-                
-                {/* Mobile Helper Text */}
-                {!isIntro && (
-                    <div className="md:hidden px-4 pb-2 text-[10px] text-gray-500 text-center border-t border-cyber-border/20 pt-2 bg-[#18181b]">
-                        {activeOs === 'windows' ? ui.mobileWin : ui.mobileUnix}
                     </div>
                 )}
             </div>
+
+            {/* ── Mobile quick-action bar ────────────────────────────────── */}
+            <div style={{
+                display: 'none', // shown via media query below
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                background: '#1c1c1c',
+                padding: '8px 12px',
+                flexShrink: 0,
+            }} className="term-mobile-bar">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
+                        Quick Actions
+                    </span>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={handleCopy} style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'rgba(255,255,255,0.7)', borderRadius: 7,
+                            padding: '5px 12px', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                        }}>
+                            <Copy size={11} /> Copy
+                        </button>
+                        {isCompleted ? (
+                            <button disabled style={{
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)',
+                                color: '#4ade80', borderRadius: 7,
+                                padding: '5px 12px', fontSize: 11, fontWeight: 700, cursor: 'default',
+                            }}>
+                                <Check size={11} /> Done
+                            </button>
+                        ) : (
+                            <button onClick={() => { setTyped(cmdString); setIsCompleted(true); onComplete(); }} style={{
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                background: '#3b8eea', border: 'none',
+                                color: '#fff', borderRadius: 7,
+                                padding: '5px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                            }}>
+                                <Play size={10} fill="currentColor" /> Run
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Keyframes */}
+            <style>{`
+                @keyframes term-blink  { 0%,100%{opacity:1} 50%{opacity:0} }
+                @keyframes term-fadein { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+                @media (max-width: 768px) { .term-mobile-bar { display: block !important; } }
+            `}</style>
         </div>
     );
 };

@@ -1,419 +1,314 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TUTORIAL_CONTENT, UI_TEXT } from './constants';
-import { StepCategory, Language, TutorialStep } from './types';
+import { Language } from './types';
 import TerminalWindow from './components/TerminalWindow';
 import CyberButton from './components/CyberButton';
 import AiChat from './components/AiChat';
 import GitFlowVisualizer from './components/GitFlowVisualizer';
 import CommandMatrix from './components/CommandMatrix';
-import { Globe, Terminal, Check, Play, Circle, MapPin, BrainCircuit, Github, Heart, Star, Languages, Info, GitBranch, Volume2, VolumeX, FolderPlus, Download, User, Zap, FileCode, Radar, PackagePlus, Save, ScanEye, Layers, Link, UploadCloud, Rocket, RefreshCw, GitMerge, ArrowRightLeft, Database, Sun, Moon } from 'lucide-react';
-import { playSfx, toggleMute } from './utils/soundEngine';
+import Sidebar from './components/layout/Sidebar';
+import Header from './components/layout/Header';
+import { IconMap, getPhaseStyles } from './utils/stepHelper';
+import { playSfx } from './utils/soundEngine';
+import { Terminal, BrainCircuit, ArrowRight, ChevronLeft, Tag } from 'lucide-react';
 
-// Icon mapping helper
-const IconMap: Record<string, React.ElementType> = {
-    Globe, Terminal, Check, Play, Circle, MapPin, BrainCircuit, Github, Heart, Star, Languages, Info, GitBranch,
-    FolderPlus, Download, User, Zap, FileCode, Radar, PackagePlus, Save, ScanEye, Layers, Link, UploadCloud, Rocket, RefreshCw, GitMerge, ArrowRightLeft
+// ── Static data ───────────────────────────────────────────────────────────────
+
+const proTips = {
+    es: [
+        'Usa `git log --oneline` para ver el historial de commits de forma compacta.',
+        '`git stash` guarda cambios temporalmente sin hacer commit. Ideal para cambiar de rama rápido.',
+        'Escribe mensajes de commit en imperativo: "Añadir login" no "Añadí login".',
+        '`git diff HEAD` muestra todos los cambios desde el último commit, staged o no.',
+        'Usa `git commit --amend` para corregir el mensaje del último commit antes de hacer push.',
+        '`git restore <file>` descarta cambios en working directory sin afectar el staging.',
+        '`git branch -d` solo borra ramas ya fusionadas. Usa `-D` para forzar el borrado.',
+        '`git fetch` descarga cambios del remoto sin aplicarlos. Más seguro que `git pull`.',
+        'Configura `git config --global alias.st status` para escribir `git st` en vez de `git status`.',
+        'El archivo `.gitignore` evita que Git rastree archivos como `node_modules/` o `.env`.',
+    ],
+    en: [
+        'Use `git log --oneline` to see a compact commit history.',
+        '`git stash` saves changes temporarily without committing. Great for quick branch switches.',
+        'Write commit messages in imperative: "Add login" not "Added login".',
+        '`git diff HEAD` shows all changes since the last commit, staged or not.',
+        'Use `git commit --amend` to fix the last commit message before pushing.',
+        '`git restore <file>` discards working directory changes without affecting staging.',
+        '`git branch -d` only deletes merged branches. Use `-D` to force delete.',
+        '`git fetch` downloads remote changes without applying them. Safer than `git pull`.',
+        'Set `git config --global alias.st status` to type `git st` instead of `git status`.',
+        'The `.gitignore` file prevents Git from tracking files like `node_modules/` or `.env`.',
+    ],
 };
+
+const gitShortcuts = [
+    { cmd: 'git log --oneline', es: 'Historial compacto', en: 'Compact history' },
+    { cmd: 'git stash', es: 'Guardar cambios temp.', en: 'Stash changes' },
+    { cmd: 'git diff HEAD', es: 'Ver todos los cambios', en: 'See all changes' },
+    { cmd: 'git restore .', es: 'Descartar cambios', en: 'Discard changes' },
+    { cmd: 'git branch -a', es: 'Ver todas las ramas', en: 'List all branches' },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const App: React.FC = () => {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [language, setLanguage] = useState<Language>('es');
     const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-    const [repoStars, setRepoStars] = useState<number>(0);
-    const [muted, setMuted] = useState(false);
     const [isMatrixOpen, setIsMatrixOpen] = useState(false);
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Get current data based on language
     const steps = TUTORIAL_CONTENT[language];
     const ui = UI_TEXT[language];
-
     const currentStep = steps[currentStepIndex];
+    if (!currentStep) return null;
+
     const isFirstStep = currentStepIndex === 0;
     const isLastStep = currentStepIndex === steps.length - 1;
+    const StepIcon = IconMap[currentStep.icon] || Terminal;
+    const phaseStyle = getPhaseStyles(currentStep.category);
 
-    // Calculate progress
-    const progressPercentage = ((currentStepIndex + 1) / steps.length) * 100;
-
-    // Apply Theme Class
     useEffect(() => {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
     }, [theme]);
 
-    // Determine if we should show the Git Flow Visualizer
-    const getShowVisualizer = () => {
-        const cmd = typeof currentStep.command === 'string' ? currentStep.command : currentStep.command.windows;
-        const visualizerKeywords = ['git init', 'git add', 'git commit', 'git push', 'git pull', 'git status', 'git diff', 'git checkout', 'git branch', 'git merge'];
-        return visualizerKeywords.some(keyword => cmd.includes(keyword));
-    };
-
-    const showVisualizer = getShowVisualizer();
-    const StepIcon = IconMap[currentStep.icon] || Terminal;
-
-    // Group steps by category for the sidebar
-    const stepsByCategory = steps.reduce((acc, step) => {
-        if (!acc[step.category]) acc[step.category] = [];
-        acc[step.category].push(step);
-        return acc;
-    }, {} as Record<string, TutorialStep[]>);
-
-    // Fetch GitHub Stars
-    useEffect(() => {
-        const fetchStars = async () => {
-            try {
-                const response = await fetch('https://api.github.com/repos/herwingx/GitPunk');
-                if (response.ok) {
-                    const data = await response.json();
-                    setRepoStars(data.stargazers_count);
-                } else {
-                    setRepoStars(0);
-                }
-            } catch (e) {
-                setRepoStars(0);
-            }
-        };
-        fetchStars();
-    }, []);
-
-    // Auto scroll sidebar when step changes
-    useEffect(() => {
-        const activeElement = document.getElementById(`step-${currentStep.id}`);
-        if (activeElement && scrollRef.current) {
-            const topPos = activeElement.offsetTop;
-            scrollRef.current.scrollTo({ top: topPos - 150, behavior: 'smooth' });
-        }
-    }, [currentStepIndex, currentStep.id]);
-
-    const handleNext = () => {
-        if (!isLastStep) {
-            playSfx.click();
-            setCurrentStepIndex(prev => prev + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        if (!isFirstStep) {
-            playSfx.click();
-            setCurrentStepIndex(prev => prev - 1);
-        }
-    };
-
+    const handleNext = () => { if (!isLastStep) { playSfx.click(); setCurrentStepIndex(p => p + 1); } };
+    const handlePrev = () => { if (!isFirstStep) { playSfx.click(); setCurrentStepIndex(p => p - 1); } };
     const handleStepClick = (stepId: number) => {
         playSfx.click();
-        setCurrentStepIndex(stepId - 1);
-    }
-
-    const handleToggleMute = () => {
-        const newMuteState = toggleMute();
-        setMuted(newMuteState);
-        if (!newMuteState) playSfx.hover(); // Test sound
+        const index = steps.findIndex(s => s.id === stepId);
+        if (index !== -1) setCurrentStepIndex(index);
+        setIsMobileMenuOpen(false);
     };
+    const toggleTheme = () => { playSfx.click(); setTheme(p => p === 'dark' ? 'light' : 'dark'); };
 
-    const toggleTheme = () => {
-        playSfx.click();
-        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-    };
+    const currentTip = language === 'es'
+        ? proTips.es[currentStepIndex % proTips.es.length]
+        : proTips.en[currentStepIndex % proTips.en.length];
 
     return (
-        <div className="min-h-screen font-sans selection:bg-cyber-cyan/30 selection:text-white overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
+        <div className="h-screen w-screen font-sans selection:bg-cyber-primary/30 overflow-hidden flex flex-row bg-cyber-bg transition-colors duration-500">
 
-            {/* Background Layers */}
-            <div className="fixed inset-0 z-0 bg-cyber-bg transition-colors duration-300"></div>
-            <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]"
-                style={{
-                    backgroundImage: `linear-gradient(${theme === 'dark' ? 'rgba(255,255,255, 0.1)' : 'rgba(0,0,0, 0.1)'} 1px, transparent 1px), linear-gradient(90deg, ${theme === 'dark' ? 'rgba(255,255,255, 0.1)' : 'rgba(0,0,0, 0.1)'} 1px, transparent 1px)`,
-                    backgroundSize: '50px 50px'
-                }}>
-            </div>
+            {/* Ambient orbs */}
+            <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-cyber-primary/15 blur-[120px] pointer-events-none mix-blend-screen animate-pulse-slow z-0" />
+            <div className="fixed bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-cyber-repo/10 blur-[100px] pointer-events-none mix-blend-screen z-0" />
 
-            {/* Sidebar Navigation - Roadmap Style */}
-            <aside className="w-full md:w-80 h-auto md:h-screen flex flex-col bg-cyber-panel/90 border-r border-cyber-border z-20 md:backdrop-blur-xl transition-colors duration-300">
-                <div className="p-6 border-b border-cyber-border bg-cyber-bg flex justify-between items-start">
-                    <div>
-                        <h1 className="text-xl font-bold font-display tracking-tighter text-cyber-text flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-gradient-to-br from-cyber-cyan to-cyber-purple flex items-center justify-center text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-                                <GitBranch size={18} strokeWidth={3} />
-                            </div>
-                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyber-text to-cyber-muted">
-                                {ui.title}<span className="font-light"></span>
-                            </span>
-                        </h1>
-                        <div className="mt-4 flex items-center gap-2 text-[10px] text-cyber-muted font-mono uppercase tracking-widest">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-green animate-pulse shadow-[0_0_8px_#10b981]"></span>
-                            {ui.roadmap}
-                        </div>
-                    </div>
+            {/* Sidebar */}
+            <Sidebar
+                steps={steps}
+                currentStepIndex={currentStepIndex}
+                isMobileMenuOpen={isMobileMenuOpen}
+                onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
+                onStepClick={handleStepClick}
+            />
 
-                    {/* Controls Row */}
-                    <div className="flex gap-1">
-                        {/* Theme Toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            className="p-2 rounded hover:bg-cyber-text/5 text-cyber-muted hover:text-cyber-text transition-colors"
-                            title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                        >
-                            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-                        </button>
+            {/* Main */}
+            <main className="flex-1 min-w-0 relative flex flex-col overflow-hidden">
 
-                        {/* Language Switcher */}
-                        <button
-                            onClick={() => { playSfx.click(); setLanguage(l => l === 'es' ? 'en' : 'es'); }}
-                            className="p-2 rounded hover:bg-cyber-text/5 text-cyber-muted hover:text-cyber-text transition-colors"
-                            title="Change Language"
-                        >
-                            <span className="font-mono text-xs font-bold">{language === 'es' ? 'ES' : 'EN'}</span>
-                        </button>
-                    </div>
-                </div>
+                <Header
+                    currentStep={currentStep}
+                    onToggleMobileMenu={() => setIsMobileMenuOpen(true)}
+                    onToggleMatrix={() => setIsMatrixOpen(!isMatrixOpen)}
+                    theme={theme}
+                    toggleTheme={toggleTheme}
+                    language={language}
+                    setLanguage={setLanguage}
+                />
 
-                <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar hidden md:block bg-cyber-bg">
-                    <div className="p-6 relative">
-                        {/* Continuous Vertical Line for Roadmap */}
-                        <div className="absolute left-[29px] top-6 bottom-6 w-0.5 bg-gradient-to-b from-cyber-cyan/20 via-cyber-purple/20 to-transparent"></div>
+                {/* ── WORKSPACE ── */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar z-10" style={{ padding: '20px 24px 100px' }}>
+                    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
 
-                        {Object.entries(stepsByCategory).map(([category, catSteps]) => {
-                            const steps = catSteps as TutorialStep[];
-                            return (
-                                <div key={category} className="mb-8 relative">
-                                    <h3 className="text-[10px] font-bold font-display text-cyber-cyan uppercase tracking-widest mb-4 pl-10 opacity-90 flex items-center gap-2">
-                                        <MapPin size={10} /> {category}
-                                    </h3>
-                                    <div className="space-y-4">
-                                        {steps.map((step) => {
-                                            const isActive = step.id === currentStep.id;
-                                            const isCompleted = step.id < currentStep.id;
-
-                                            return (
-                                                <button
-                                                    key={step.id}
-                                                    id={`step-${step.id}`}
-                                                    onClick={() => handleStepClick(step.id)}
-                                                    onMouseEnter={() => playSfx.hover()}
-                                                    className={`w-full text-left group relative pl-10 pr-2 py-1 transition-all duration-300`}
-                                                >
-                                                    {/* Node on the line */}
-                                                    <div className={`absolute left-[22px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 transition-all duration-300 z-10 ${isActive
-                                                            ? 'bg-cyber-cyan border-cyber-cyan shadow-[0_0_10px_#06b6d4] scale-125'
-                                                            : isCompleted
-                                                                ? 'bg-cyber-panel border-cyber-green text-cyber-green'
-                                                                : 'bg-cyber-panel border-cyber-muted'
-                                                        }`}>
-                                                        {isCompleted && <div className="absolute inset-0 flex items-center justify-center"><Check size={8} /></div>}
-                                                        {isActive && <div className="absolute inset-0 flex items-center justify-center"><div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div></div>}
-                                                    </div>
-
-                                                    <div className={`rounded-lg p-2 transition-all duration-200 ${isActive ? 'bg-cyber-cyan/5 border border-cyber-cyan/10 translate-x-2' : 'group-hover:bg-cyber-text/5 border border-transparent'}`}>
-                                                        <span className={`block text-xs font-medium font-display transition-colors ${isActive ? 'text-cyber-cyan' : isCompleted ? 'text-cyber-muted' : 'text-cyber-text'}`}>
-                                                            {step.title}
-                                                        </span>
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                        {/* ── STEP HEADER ── */}
+                        <div className="mb-5 animate-fade-in-up">
+                            <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold font-mono uppercase tracking-widest ${phaseStyle.border} ${phaseStyle.color} ${phaseStyle.bg}`}>
+                                    <StepIcon size={10} />
+                                    {ui.phase} {Math.ceil((currentStepIndex + 1) / 4)}
                                 </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Sidebar Footer - Credits */}
-                <div className="hidden md:flex flex-col items-center justify-center p-4 border-t border-cyber-border bg-cyber-bg gap-2">
-                    {/* Sound Toggle */}
-                    <button
-                        onClick={handleToggleMute}
-                        className="flex items-center gap-2 text-[10px] text-cyber-muted hover:text-cyber-cyan transition-colors mb-2 uppercase font-mono tracking-wider"
-                    >
-                        {muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                        {muted ? 'Audio: Muted' : 'Audio: Active'}
-                    </button>
-
-                    <a
-                        href="https://github.com/herwingx"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex items-center gap-2 px-4 py-2 rounded-full bg-cyber-text/5 hover:bg-cyber-text/10 transition-all border border-transparent hover:border-cyber-cyan/20 w-full justify-center"
-                    >
-                        <span className="text-[10px] text-cyber-muted font-mono group-hover:text-cyber-text transition-colors">{ui.credits}</span>
-                        <span className="text-xs font-bold text-cyber-cyan group-hover:text-cyber-cyanGlow transition-colors">herwingx</span>
-                        <Heart size={10} className="text-red-500 fill-red-500/20 animate-pulse" />
-                    </a>
-                </div>
-
-                {/* Mobile Progress */}
-                <div className="md:hidden h-1 bg-cyber-border w-full">
-                    <div className="h-full bg-gradient-to-r from-cyber-cyan to-cyber-purple transition-all duration-300" style={{ width: `${progressPercentage}%` }}></div>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 relative overflow-hidden flex flex-col h-[calc(100vh-60px)] md:h-screen transition-colors duration-300">
-
-                {/* Top Bar Actions (Stars + Matrix) */}
-                <div className="absolute top-4 right-4 md:top-8 md:right-8 z-30 flex items-center gap-3">
-
-                    {/* Command Matrix Button */}
-                    <button
-                        onClick={() => { playSfx.click(); setIsMatrixOpen(true); }}
-                        className="flex items-center gap-2 bg-cyber-panel/80 backdrop-blur-md border border-cyber-cyan/30 rounded-lg px-3 py-2 text-cyber-cyan hover:bg-cyber-cyan/10 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all group"
-                    >
-                        <Database size={16} />
-                        <span className="hidden md:inline text-xs font-display font-bold">{ui.openMatrix}</span>
-                    </button>
-
-                    {/* Repo Link */}
-                    <a
-                        href="https://github.com/herwingx/GitPunk"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => playSfx.click()}
-                        className="flex items-center gap-0 bg-cyber-panel/80 backdrop-blur-md border border-cyber-border rounded-lg overflow-hidden group hover:border-cyber-text transition-all shadow-lg"
-                    >
-                        <div className="px-3 py-2 bg-cyber-text/5 border-r border-cyber-text/5 flex items-center justify-center">
-                            <Github size={18} className="text-cyber-text" />
-                        </div>
-                        <div className="px-3 py-2 flex items-center gap-2">
-                            <span className="text-xs font-bold font-display text-cyber-muted group-hover:text-cyber-text">{ui.star}</span>
-                            <div className="flex items-center gap-1 bg-cyber-text/10 px-1.5 py-0.5 rounded text-[10px] text-cyber-muted min-w-[30px] justify-center font-mono">
-                                <Star size={8} className={`text-yellow-500 fill-yellow-500 ${repoStars > 0 ? 'animate-pulse' : ''}`} />
-                                <span>{repoStars}</span>
+                                <span className="text-[10px] font-mono text-cyber-muted uppercase tracking-widest opacity-60">
+                                    {currentStep.category}
+                                </span>
                             </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-12 pb-32">
-                    <div className="max-w-4xl mx-auto w-full">
-
-                        {/* Header Tags */}
-                        <div className="flex flex-wrap gap-3 mb-6 items-center animate-fade-in-up">
-                            <span className="px-3 py-1 rounded-full text-[10px] font-bold font-display tracking-wider bg-cyber-panel border border-cyber-border text-cyber-muted uppercase backdrop-blur-sm shadow-sm">
-                                {currentStep.category}
-                            </span>
-                            <div className="h-px w-8 bg-cyber-border"></div>
-                            <span className="text-cyber-cyan font-mono text-xs">
-                                {ui.phase} {Math.floor((currentStep.id >= 3 ? (currentStepIndex + 2) / 4 : 0) + 1)} <span className="text-cyber-muted">::</span> {ui.node} {currentStep.id}
-                            </span>
+                            <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-cyber-text leading-tight tracking-tight">
+                                {currentStep.title}
+                            </h2>
+                            <p className="text-sm md:text-base text-cyber-muted font-light leading-relaxed mt-1 max-w-xl">
+                                {currentStep.description}
+                            </p>
                         </div>
 
-                        {/* Title */}
-                        <h2 className="text-3xl md:text-5xl font-bold font-display text-cyber-text mb-6 tracking-tight drop-shadow-lg leading-tight animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                            {currentStep.title}
-                        </h2>
+                        {/* ══════════════════════════════════════════════════
+                            ROW 1 — 3 columns, all same height (items-stretch)
+                            Col A (3): Knowledge base
+                            Col B (6): Objective + Terminal
+                            Col C (3): Flags + Pro Tip + Shortcuts
+                        ══════════════════════════════════════════════════ */}
+                        <div
+                            className="grid grid-cols-1 lg:grid-cols-12 gap-4 animate-fade-in-up lg:items-stretch"
+                            style={{ animationDelay: '80ms' }}
+                        >
 
-                        {/* Description & Practical Task Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                            <div>
-                                <p className="text-lg text-cyber-muted font-light leading-relaxed mb-6">
-                                    {currentStep.description}
-                                </p>
-                                <div className="glass-panel rounded-xl p-5 relative overflow-hidden group hover:border-cyber-purple/30 transition-colors">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyber-purple to-transparent opacity-70"></div>
-                                    <h3 className="text-cyber-purple font-display text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <Globe size={14} />
+                            {/* ── COL A: Knowledge base ── */}
+                            <div className="lg:col-span-3 order-3 lg:order-1">
+                                <div className="glass-panel rounded-2xl p-5 h-full flex flex-col">
+                                    <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-3 flex items-center gap-2 shrink-0 ${phaseStyle.color}`}>
+                                        <BrainCircuit size={13} />
                                         {ui.knowledgeBase}
                                     </h3>
-                                    <p className="text-sm text-cyber-text leading-relaxed opacity-90">
+                                    {/* flex-1 makes text fill remaining height so card stretches */}
+                                    <p className="text-sm text-cyber-text leading-relaxed opacity-90 flex-1">
                                         {currentStep.explanation}
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Conditional Rendering: GitFlow Visualizer or Static Icon */}
-                            <div className="bg-cyber-panel border border-cyber-cyan/20 rounded-xl p-6 flex flex-col shadow-lg relative overflow-hidden justify-center items-center text-center">
+                            {/* ── COL B: Objective + Terminal ── */}
+                            <div className="lg:col-span-6 order-1 lg:order-2 flex flex-col gap-3">
 
-                                {showVisualizer ? (
-                                    <div className="h-24 md:h-32 w-full mb-4 relative z-10 flex items-center justify-center">
-                                        <GitFlowVisualizer command={currentStep.command} language={language} />
-                                    </div>
-                                ) : (
-                                    <div className="h-24 md:h-32 w-full mb-4 relative z-10 flex items-center justify-center opacity-80">
-                                        <StepIcon size={80} strokeWidth={1} className="text-cyber-cyan drop-shadow-[0_0_10px_rgba(6,182,212,0.3)]" />
+                                {/* Objective */}
+                                {currentStep.practicalTask && (
+                                    <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-cyber-primary/25 bg-cyber-primary/5 backdrop-blur-sm shrink-0">
+                                        <span className="text-cyber-primary shrink-0 mt-0.5 text-base">◎</span>
+                                        <p className="text-sm text-cyber-text leading-snug">{currentStep.practicalTask}</p>
                                     </div>
                                 )}
 
-                                <div className="w-full text-left">
-                                    <h3 className="text-cyber-cyan font-display text-xs uppercase tracking-widest mb-3 flex items-center gap-2 relative z-10">
-                                        <Play size={14} fill="currentColor" />
-                                        {currentStep.category === (language === 'es' ? "CONCEPTOS CLAVE" : "KEY CONCEPTS") ? ui.objective : ui.activeInstruction}
-                                    </h3>
-                                    <p className="text-sm md:text-base text-cyber-text font-medium relative z-10 leading-relaxed">
-                                        {currentStep.practicalTask}
-                                    </p>
+                                {/* Terminal — flex-1 fills remaining height */}
+                                <div className="flex-1" style={{ minHeight: 260 }}>
+                                    <TerminalWindow
+                                        command={currentStep.command}
+                                        stepId={currentStep.id}
+                                        category={currentStep.category}
+                                        language={language}
+                                        onComplete={() => playSfx.success()}
+                                    />
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Interactive Terminal */}
-                        <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                            <TerminalWindow
-                                command={currentStep.command}
-                                stepId={currentStep.id}
-                                category={currentStep.category}
-                                language={language}
-                                onComplete={() => { }}
-                            />
+                            {/* ── COL C: Flags + Pro Tip + Shortcuts ── */}
+                            <div className="lg:col-span-3 order-2 lg:order-3 flex flex-col gap-3">
 
-                            {/* Command Breakdown */}
-                            {currentStep.flagDetails && currentStep.flagDetails.length > 0 && (
-                                <div className="mt-6 bg-cyber-panel/40 border border-cyber-border rounded-xl p-5 backdrop-blur-sm relative overflow-hidden">
-                                    <div className="absolute left-0 top-0 w-1 h-full bg-cyber-purple/50"></div>
-                                    <h3 className="text-xs font-bold font-display text-cyber-purple uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <Info size={14} />
-                                        {ui.commandBreakdown}
-                                    </h3>
-                                    <div className="grid gap-3">
-                                        {currentStep.flagDetails.map((item, idx) => (
-                                            <div key={idx} className="flex items-start gap-4 text-sm group">
-                                                <div className="min-w-[4rem] md:min-w-[6rem] text-center">
-                                                    <span className="inline-block w-full py-1 px-2 rounded bg-cyber-purple/10 border border-cyber-purple/30 text-cyber-purpleGlow font-mono text-xs font-bold shadow-[0_0_10px_rgba(139,92,246,0.1)] group-hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] transition-all">
-                                                        {item.flag}
-                                                    </span>
-                                                </div>
-                                                <p className="text-cyber-muted font-light leading-relaxed pt-0.5">
-                                                    {item.description}
-                                                </p>
+                                {/* Flags header */}
+                                <div className="flex items-center gap-2 shrink-0">
+                                    {currentStep.flagDetails
+                                        ? <Tag size={11} className={phaseStyle.color} />
+                                        : <Terminal size={11} className={phaseStyle.color} />
+                                    }
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest font-mono ${phaseStyle.color}`}>
+                                        {currentStep.flagDetails
+                                            ? ui.commandBreakdown
+                                            : (language === 'es' ? 'Referencia Rápida' : 'Quick Reference')}
+                                    </span>
+                                </div>
+
+                                {/* Flag cards */}
+                                {currentStep.flagDetails && currentStep.flagDetails.map((f, i) => (
+                                    <div
+                                        key={i}
+                                        className="glass-panel rounded-xl p-3 hover:border-cyber-primary/30 transition-all group cursor-default shrink-0"
+                                    >
+                                        <code className={`block text-[12px] font-bold font-mono mb-1.5 ${phaseStyle.color}`}>
+                                            {f.flag}
+                                        </code>
+                                        <p className="text-xs text-cyber-muted leading-relaxed group-hover:text-cyber-text transition-colors">
+                                            {f.description}
+                                        </p>
+                                    </div>
+                                ))}
+
+                                {/* Pro Tip */}
+                                <div className="glass-panel rounded-xl p-3.5 border border-amber-400/15 bg-amber-400/5 shrink-0">
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                        <span className="text-amber-400 text-xs leading-none">⚡</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest font-mono text-amber-400/80">
+                                            Pro Tip
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-cyber-muted leading-relaxed">{currentTip}</p>
+                                </div>
+
+                                {/* Shortcuts — flex-1 so it stretches to match col height */}
+                                <div className="glass-panel rounded-xl p-3.5 flex-1 flex flex-col">
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest font-mono block mb-3 shrink-0 ${phaseStyle.color}`}>
+                                        {language === 'es' ? 'Atajos útiles' : 'Useful shortcuts'}
+                                    </span>
+                                    <div className="space-y-2.5 flex-1">
+                                        {gitShortcuts.map((s, i) => (
+                                            <div key={i} className="flex items-start gap-2">
+                                                <code className="shrink-0 text-[10px] font-mono bg-cyber-border/30 px-1.5 py-0.5 rounded text-cyber-text/70 whitespace-nowrap">
+                                                    {s.cmd}
+                                                </code>
+                                                <span className="text-[10px] text-cyber-muted leading-tight pt-0.5">
+                                                    {language === 'es' ? s.es : s.en}
+                                                </span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
-                            )}
+
+                            </div>
                         </div>
 
-                        {/* Navigation Footer */}
-                        <div className="flex items-center justify-between mt-auto pt-6 border-t border-cyber-border">
-                            <CyberButton
-                                variant="secondary"
-                                onClick={handlePrev}
-                                disabled={isFirstStep}
-                            >
-                                {ui.prev}
-                            </CyberButton>
-
-                            <CyberButton
-                                onClick={handleNext}
-                                disabled={isLastStep}
-                            >
-                                {isLastStep ? ui.completedTitle : ui.next}
-                            </CyberButton>
+                        {/* ══════════════════════════════════════════════════
+                            ROW 2 — Git Flow visualizer, full width, tall
+                        ══════════════════════════════════════════════════ */}
+                        <div className="mt-4 animate-fade-in-up" style={{ animationDelay: '160ms' }}>
+                            <div className="glass-panel rounded-2xl overflow-hidden hover:border-cyber-primary/30 transition-colors">
+                                {/* Title bar */}
+                                <div className="flex items-center justify-between px-5 pt-3 pb-2.5 border-b border-cyber-border/30">
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest font-mono ${phaseStyle.color}`}>
+                                        Git Flow — {currentStep.title}
+                                    </span>
+                                    <div className="flex gap-1.5">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400/60" />
+                                        <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                                    </div>
+                                </div>
+                                {/* Visualizer — tall so animation breathes */}
+                                <div className="flex items-center justify-center relative" style={{ minHeight: 180, height: 'clamp(160px, 22vh, 240px)' }}>
+                                    <GitFlowVisualizer command={currentStep.command} language={language} />
+                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-cyber-bg/30 pointer-events-none" />
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
+
+                {/* ── BOTTOM NAV ── */}
+                <div className="absolute bottom-0 inset-x-0 z-20 pointer-events-none"
+                    style={{ background: 'linear-gradient(to top, var(--color-cyber-bg) 60%, transparent)' }}>
+                    <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between pointer-events-auto">
+                        <CyberButton
+                            onClick={handlePrev}
+                            disabled={isFirstStep}
+                            variant="secondary"
+                            className="glass-button text-sm flex items-center gap-2"
+                        >
+                            <ChevronLeft size={15} />
+                            {ui.prev}
+                        </CyberButton>
+
+                        <CyberButton
+                            onClick={handleNext}
+                            disabled={isLastStep}
+                            variant="primary"
+                            className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm"
+                        >
+                            {isLastStep ? ui.completedTitle : ui.next}
+                            {!isLastStep && <ArrowRight size={15} />}
+                        </CyberButton>
+                    </div>
+                </div>
+
             </main>
 
-            {/* AI Assistant Chat - Fixed Bottom Right */}
+            {/* Floating widgets */}
             <AiChat language={language} />
-
-            {/* Matrix Modal */}
-            <CommandMatrix
-                isOpen={isMatrixOpen}
-                onClose={() => setIsMatrixOpen(false)}
-                language={language}
-            />
+            <CommandMatrix isOpen={isMatrixOpen} onClose={() => setIsMatrixOpen(false)} language={language} />
 
         </div>
     );

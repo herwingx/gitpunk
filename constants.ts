@@ -100,7 +100,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "¿Qué es Git y GitHub?",
         command: "LOADING CONCEPT: GIT_VS_GITHUB...",
         description: "Antes de escribir código, entiende la diferencia. Son dos cosas distintas.",
-        explanation: "Imagina un videojuego: GIT es el sistema de 'Guardar Partida' en tu consola (Local). GITHUB es el servidor online donde subes tus partidas para que otros las vean (Nube).",
+        explanation: "Git es un sistema de control de versiones que vive en tu PC. GitHub es una plataforma en la nube que aloja repositorios Git. Son complementarios: Git gestiona el historial localmente, GitHub lo comparte con el mundo. Puedes usar Git sin GitHub, pero no GitHub sin Git.",
         practicalTask: "Lee esto atentamente: Git vive en tu PC. GitHub vive en Internet. No necesitas escribir nada aún, solo asimila el concepto.",
         category: "CONCEPTOS CLAVE",
         icon: 'BrainCircuit'
@@ -110,7 +110,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "El Flujo de Trabajo",
         command: "LOADING WORKFLOW: EDIT -> ADD -> COMMIT...",
         description: "El ciclo de vida de tu código tiene 3 estados.",
-        explanation: "1. Working Directory: Tu mesa de trabajo (donde editas). 2. Staging Area: El carrito de compras (donde eliges qué guardar). 3. Repository: La caja fuerte (donde se guarda la historia).",
+        explanation: "Todo cambio en Git pasa por 3 estados: 1) Working Directory — editas el archivo. 2) Staging Area (git add) — seleccionas qué cambios incluir en el próximo guardado. 3) Repository (git commit) — el cambio queda registrado permanentemente en el historial. Este flujo te da control total sobre qué guardar y cuándo.",
         practicalTask: "Entiende esto: No se guarda automáticamente. Tú decides cuándo sacar la 'foto' (commit) de tu trabajo. Ahora, prepárate para instalar.",
         category: "CONCEPTOS CLAVE",
         icon: 'RefreshCw'
@@ -125,7 +125,7 @@ const STEPS_ES: TutorialStep[] = [
             linux: 'sudo apt install git-all'
         },
         description: "Instala el software necesario en tu sistema.",
-        explanation: "Git es el motor que rastrea los cambios. Sin él, no hay viaje en el tiempo para tu código.",
+        explanation: "Git no viene preinstalado en Windows. En Linux/Mac suele estar disponible pero puede estar desactualizado. 'winget' es el gestor de paquetes oficial de Windows 10/11. 'apt' es el de Debian/Ubuntu. Tras instalar, cierra y vuelve a abrir la terminal para que el comando 'git' sea reconocido.",
         practicalTask: "IMPORTANTE: Si usas Windows, busca 'PowerShell' en el menú inicio y ábrelo. Si usas Mac/Linux, abre la app 'Terminal'. Luego copia y pega el comando correspondiente.",
         category: "INSTALACIÓN",
         icon: 'Download'
@@ -135,7 +135,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Configurar Identidad",
         command: 'git config --global user.name "TuNombre"',
         description: "Firma digital para tus trabajos.",
-        explanation: "Git necesita saber quién eres para atribuirte el mérito de tus cambios en el historial.",
+        explanation: "Git firma cada commit con tu nombre y email. Sin esta configuración, los commits aparecen como 'unknown'. '--global' lo aplica a todos tus proyectos en este equipo. Puedes sobreescribirlo por proyecto omitiendo '--global'. Verifica con: git config --global --list",
         practicalTask: "En tu terminal (PowerShell o Bash), reemplaza 'TuNombre' con tu nombre real o nick y presiona Enter.",
         category: "CONFIGURACIÓN",
         icon: 'User',
@@ -153,7 +153,7 @@ const STEPS_ES: TutorialStep[] = [
             linux: 'mkdir CyberProfile && cd CyberProfile'
         },
         description: "Crea una carpeta para el proyecto.",
-        explanation: "Vamos a crear un sitio web personal. Primero necesitamos una carpeta vacía donde vivirá todo.",
+        explanation: "Cada proyecto Git debe vivir en su propia carpeta. 'mkdir' crea el directorio y 'cd' entra en él. En Windows se separan con ';', en Linux/Mac con '&&'. Mantén los nombres sin espacios para evitar problemas en la terminal.",
         practicalTask: "Asegúrate de estar en tu PowerShell (Win) o Terminal (Mac/Linux). Ejecuta el comando para crear la carpeta y entrar en ella.",
         category: "CICLO BÁSICO",
         icon: 'FolderPlus'
@@ -163,7 +163,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Inicializar Git",
         command: 'git init',
         description: "Activa el rastreo de Git en esta carpeta.",
-        explanation: "Este comando crea una subcarpeta oculta (.git). Ahora Git está observando todo lo que pasa aquí dentro.",
+        explanation: "'git init' crea una carpeta oculta '.git' dentro de tu proyecto. Ahí Git almacena todo: historial, ramas, configuración. Sin esta carpeta, Git no rastrea nada. Solo se ejecuta una vez por proyecto. Nunca borres la carpeta '.git' manualmente.",
         practicalTask: "Ejecuta 'git init'. Verás un mensaje que dice 'Initialized empty Git repository'.",
         category: "CICLO BÁSICO",
         icon: 'Zap'
@@ -178,7 +178,7 @@ const STEPS_ES: TutorialStep[] = [
             linux: 'echo "<h1>Hola Mundo Cyberpunk</h1>" > index.html'
         },
         description: "Crea tu primer archivo HTML.",
-        explanation: "Estamos creando un archivo real. En un proyecto real usarías un editor de código (VS Code), pero aquí lo haremos por terminal.",
+        explanation: "'echo' imprime texto y '>' lo redirige a un archivo (lo crea si no existe, lo sobreescribe si existe). En proyectos reales usarías VS Code o cualquier editor. Este paso simula crear tu primer archivo de código para que Git tenga algo que rastrear.",
         practicalTask: "Copia el comando. Esto creará un archivo llamado 'index.html' con un título dentro.",
         category: "CICLO BÁSICO",
         icon: 'FileCode'
@@ -188,7 +188,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Verificar Radar (Status)",
         command: 'git status',
         description: "Consulta qué archivos son nuevos o han cambiado.",
-        explanation: "El comando más importante. Te dirá que 'index.html' está en rojo (Untracked). Git lo ve, pero no lo está guardando aún.",
+        explanation: "'git status' es tu radar en tiempo real. Muestra 3 categorías: Untracked (rojo) — archivos nuevos que Git no conoce. Modified (rojo) — archivos conocidos con cambios sin preparar. Staged (verde) — listos para el próximo commit. Úsalo constantemente, es gratuito y no modifica nada.",
         practicalTask: "Ejecuta el comando y observa las letras rojas.",
         category: "CICLO BÁSICO",
         icon: 'Radar'
@@ -198,7 +198,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Preparar (Stage)",
         command: 'git add index.html',
         description: "Mueve el archivo al área de preparación.",
-        explanation: "Le dices a Git: 'Quiero que incluyas este archivo en la próxima foto que tomemos'.",
+        explanation: "'git add' mueve cambios al Staging Area. Puedes ser selectivo: 'git add index.html' agrega solo ese archivo. 'git add .' agrega todo. Esto te permite hacer commits atómicos — un commit por funcionalidad, no uno por sesión de trabajo.",
         practicalTask: "Ejecuta el comando. Si haces 'git status' de nuevo, verás que ahora está verde.",
         category: "CICLO BÁSICO",
         icon: 'PackagePlus'
@@ -208,7 +208,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Guardar Versión (Commit)",
         command: 'git commit -m "Crear home page"',
         description: "Guarda los cambios permanentemente.",
-        explanation: "¡Clic! 📸 Has creado la versión 1.0 de tu historia. El mensaje entre comillas explica qué hiciste.",
+        explanation: "Un commit es una instantánea permanente del proyecto en ese momento. Cada commit tiene: un hash único (ej: a3f2c1d), autor, fecha y mensaje. El mensaje debe describir el QUÉ y el POR QUÉ del cambio, no el cómo. Convención: usa verbos en imperativo ('Crear', 'Corregir', 'Añadir').",
         practicalTask: "Ejecuta el comando para consolidar tu creación.",
         category: "CICLO BÁSICO",
         icon: 'Save',
@@ -223,7 +223,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Analizar Diferencias (Diff)",
         command: 'git diff',
         description: "Muestra qué cambió exactamente dentro de los archivos.",
-        explanation: "Antes de guardar cambios nuevos, es vital revisar qué líneas de código modificaste para no romper nada.",
+        explanation: "'git diff' compara el Working Directory con el Staging Area y muestra las diferencias línea por línea. Las líneas en rojo (con '-') son lo que se eliminó. Las verdes (con '+') son lo que se añadió. Si ya hiciste 'git add', usa 'git diff --staged' para ver los cambios preparados.",
         practicalTask: "Primero modifica el archivo (ej: echo '<h2>Status: Online</h2>' >> index.html) y luego ejecuta 'git diff'.",
         category: "CICLO BÁSICO",
         icon: 'ScanEye'
@@ -233,7 +233,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Guardar Cambios V2",
         command: 'git add . && git commit -m "Añadir subtitulo"',
         description: "Un combo: Preparar todo y guardar.",
-        explanation: "Aquí usamos un truco ninja: 'git add .' agrega TODO lo que cambiaste, y luego hacemos el commit inmediatamente.",
+        explanation: "'git add .' es el selector universal — agrega todos los archivos modificados y nuevos del directorio actual (y subdirectorios). Combinarlo con commit en una línea es eficiente para cambios simples. Para cambios complejos, es mejor revisar con 'git status' antes de hacer add masivo.",
         practicalTask: "Ejecuta este combo para guardar la versión 2.0 de tu web.",
         category: "CICLO BÁSICO",
         icon: 'Layers',
@@ -249,7 +249,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Crear Rama (Branch)",
         command: 'git branch feature-login',
         description: "Crea una línea temporal alternativa.",
-        explanation: "Las ramas te permiten experimentar sin romper el código principal. Es como crear un 'Mundo Alternativo' donde puedes hacer locuras.",
+        explanation: "Una rama es un puntero ligero a un commit específico. Crear una rama es instantáneo y no copia archivos. La rama 'main' sigue intacta mientras trabajas en 'feature-login'. Esto es la base del trabajo en equipo: cada desarrollador trabaja en su rama sin interferir con los demás.",
         practicalTask: "Ejecuta el comando para crear una rama llamada 'feature-login'. Tu código principal (main) seguirá intacto.",
         category: "UNIVERSOS PARALELOS",
         icon: 'GitBranch'
@@ -259,7 +259,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Cambiar de Universo",
         command: 'git checkout feature-login',
         description: "Te teletransporta a la nueva rama.",
-        explanation: "Solo crear la rama no basta, tienes que 'entrar' en ella. Ahora cualquier cambio que hagas solo existirá en 'feature-login'.",
+        explanation: "'git checkout' mueve el puntero HEAD a la rama indicada y actualiza tu Working Directory con los archivos de esa rama. En Git moderno (2.23+) se prefiere 'git switch feature-login' que es más claro. Puedes ver en qué rama estás con 'git branch' — la activa tiene un asterisco.",
         practicalTask: "Ejecuta el comando. Verás 'Switched to branch feature-login'. Nota: En versiones nuevas también se usa 'git switch'.",
         category: "UNIVERSOS PARALELOS",
         icon: 'ArrowRightLeft',
@@ -272,7 +272,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Fusión de Realidades",
         command: 'git checkout main && git merge feature-login',
         description: "Une los cambios de la rama experimental a la principal.",
-        explanation: "Una vez que tu experimento funciona, vuelves a la realidad original (main) y absorbes los cambios.",
+        explanation: "'git merge' integra el historial de una rama en otra. Primero vuelves a 'main' (la rama destino), luego ejecutas merge. Si no hay conflictos, Git hace un 'fast-forward' o crea un commit de merge automáticamente. Si hay conflictos, Git marca los archivos y tú los resuelves manualmente.",
         practicalTask: "Regresa a main y fusiona tu trabajo. Ahora tu experimento es oficial.",
         category: "UNIVERSOS PARALELOS",
         icon: 'GitMerge'
@@ -284,7 +284,7 @@ const STEPS_ES: TutorialStep[] = [
         title: "Renombrar Rama Principal",
         command: 'git branch -M main',
         description: "Estandariza el nombre de tu línea temporal.",
-        explanation: "Antiguamente se llamaba 'master', ahora el estándar de la industria es 'main'.",
+        explanation: "El estándar de la industria cambió de 'master' a 'main' en 2020 (GitHub, GitLab, Bitbucket). '-M' fuerza el renombrado incluso si ya existe una rama 'main'. Es importante hacerlo antes de conectar con GitHub para que los nombres coincidan y el push funcione sin configuración extra.",
         practicalTask: "Ejecuta el comando para modernizar tu repositorio.",
         category: "NUBE & COLABORACIÓN",
         icon: 'GitBranch',
@@ -297,23 +297,23 @@ const STEPS_ES: TutorialStep[] = [
         title: "Crear Repositorio en GitHub",
         command: 'echo "Ir a GitHub.com -> New Repository"',
         description: "Acción manual en el navegador.",
-        explanation: "Git es local (en tu PC). GitHub es la nube. Necesitas crear el espacio en la nube para subir tu código.",
-        practicalTask: "Go to GitHub.com, login, create a new repo named 'CyberProfile'. DO NOT initialize with README. Copy the HTTPS URL.",
+        explanation: "Un repositorio en GitHub es el espacio en la nube para tu proyecto. Al crearlo, NO marques 'Initialize with README' — si lo haces, GitHub crea un commit inicial que entrará en conflicto con tu historial local al intentar hacer push. Copia la URL HTTPS (no SSH) si aún no tienes llaves SSH configuradas.",
+        practicalTask: "Ve a GitHub.com, inicia sesión, crea un repo nuevo llamado 'CyberProfile'. NO inicialices con README. Copia la URL HTTPS.",
         category: "NUBE & COLABORACIÓN",
         icon: 'Globe'
     },
     {
         id: 18,
         title: "Conectar Cables (Remote)",
-        command: 'git remote add origin https://github.com/YOUR_USER/CyberProfile.git',
-        description: "Link local folder with GitHub.",
-        explanation: "You are saving the GitHub address with the nickname 'origin'. So you don't have to type the URL every time.",
-        practicalTask: "Paste the command BUT replace the URL with the one you copied from your real GitHub.",
-        category: "CLOUD & COLLAB",
+        command: 'git remote add origin https://github.com/TU_USUARIO/CyberProfile.git',
+        description: "Vincula tu carpeta local con GitHub.",
+        explanation: "'git remote add' registra una URL remota con un alias. 'origin' es la convención universal para el remoto principal. Puedes tener múltiples remotos (ej: 'upstream' para el repo original en un fork). Verifica con 'git remote -v'. La URL puede ser HTTPS (usuario/contraseña) o SSH (llave pública).",
+        practicalTask: "Pega el comando PERO reemplaza la URL con la que copiaste de tu GitHub real.",
+        category: "NUBE & COLABORACIÓN",
         icon: 'Link',
         flagDetails: [
-            { flag: "add", description: "Subcommand to register a new remote." },
-            { flag: "origin", description: "Standard alias/name for your primary remote repository." }
+            { flag: "add", description: "Subcomando para registrar un nuevo repositorio remoto." },
+            { flag: "origin", description: "Alias estándar para tu repositorio remoto principal." }
         ]
     },
     {
@@ -321,12 +321,12 @@ const STEPS_ES: TutorialStep[] = [
         title: "Subir a la Nube (Push)",
         command: 'git push -u origin main',
         description: "Envía tus commits locales a GitHub.",
-        explanation: "Truth moment! Files travel from PC to server. The '-u' connects your local branch with the cloud one forever.",
-        practicalTask: "Run the command. If it's your first time, it will ask to login in browser.",
-        category: "CLOUD & COLLAB",
+        explanation: "'git push' envía tus commits locales al remoto. '-u' (--set-upstream) establece el tracking: de ahora en adelante, 'git push' sin argumentos sabrá a dónde enviar. Si es tu primera vez, GitHub pedirá autenticación vía navegador (token) o llave SSH. Tras el push, tus commits son visibles en github.com.",
+        practicalTask: "Ejecuta el comando. Si es tu primera vez, te pedirá iniciar sesión en el navegador.",
+        category: "NUBE & COLABORACIÓN",
         icon: 'UploadCloud',
         flagDetails: [
-            { flag: "-u", description: "Upstream. Sets a permanent link between your local branch and the cloud one for future pushes." }
+            { flag: "-u", description: "Upstream. Establece un enlace permanente entre tu rama local y la de la nube para futuros pushes." }
         ]
     }
 ];
@@ -338,7 +338,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "What is Git vs GitHub?",
         command: "LOADING CONCEPT: GIT_VS_GITHUB...",
         description: "Before writing code, understand the difference. They are two distinct entities.",
-        explanation: "Imagine a video game: GIT is the 'Save Game' system on your console (Local). GITHUB is the online server where you upload saves for others to see (Cloud).",
+        explanation: "Git is a version control system that lives on your PC. GitHub is a cloud platform that hosts Git repositories. They are complementary: Git manages history locally, GitHub shares it with the world. You can use Git without GitHub, but not GitHub without Git.",
         practicalTask: "Read carefully: Git lives on your PC. GitHub lives on the Internet. No need to write code yet, just assimilate the concept.",
         category: "KEY CONCEPTS",
         icon: 'BrainCircuit'
@@ -348,7 +348,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "The Workflow",
         command: "LOADING WORKFLOW: EDIT -> ADD -> COMMIT...",
         description: "Your code's lifecycle has 3 states.",
-        explanation: "1. Working Directory: Your workbench (where you edit). 2. Staging Area: The shopping cart (where you choose what to save). 3. Repository: The vault (where history is kept).",
+        explanation: "Every change in Git goes through 3 states: 1) Working Directory — you edit the file. 2) Staging Area (git add) — you select which changes to include in the next save. 3) Repository (git commit) — the change is permanently recorded in history. This flow gives you full control over what to save and when.",
         practicalTask: "Understand this: Autosave doesn't exist here. You decide when to take the 'snapshot' (commit) of your work. Now, prepare to install.",
         category: "KEY CONCEPTS",
         icon: 'RefreshCw'
@@ -363,7 +363,7 @@ const STEPS_EN: TutorialStep[] = [
             linux: 'sudo apt install git-all'
         },
         description: "Install necessary software on your system.",
-        explanation: "Git is the engine that tracks changes. Without it, there is no time travel for your code.",
+        explanation: "Git is not pre-installed on Windows. On Linux/Mac it may be available but outdated. 'winget' is the official Windows 10/11 package manager. 'apt' is for Debian/Ubuntu. After installing, close and reopen your terminal so the 'git' command is recognized.",
         practicalTask: "IMPORTANT: If using Windows, open 'PowerShell'. If Mac/Linux, open 'Terminal'. Then copy and paste the command.",
         category: "INSTALLATION",
         icon: 'Download'
@@ -373,7 +373,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Configure Identity",
         command: 'git config --global user.name "YourName"',
         description: "Digital signature for your work.",
-        explanation: "Git needs to know who you are to credit you for changes in the history log.",
+        explanation: "Git signs every commit with your name and email. Without this config, commits show as 'unknown'. '--global' applies it to all projects on this machine. You can override it per project by omitting '--global'. Verify with: git config --global --list",
         practicalTask: "In your terminal, replace 'YourName' with your real name or handle and press Enter.",
         category: "CONFIGURATION",
         icon: 'User',
@@ -391,7 +391,7 @@ const STEPS_EN: TutorialStep[] = [
             linux: 'mkdir CyberProfile && cd CyberProfile'
         },
         description: "Create a folder for the project.",
-        explanation: "We are creating a personal website. First, we need an empty folder where everything will live.",
+        explanation: "Each Git project should live in its own folder. 'mkdir' creates the directory and 'cd' enters it. On Windows they are chained with ';', on Linux/Mac with '&&'. Keep names without spaces to avoid terminal issues.",
         practicalTask: "Ensure you are in PowerShell (Win) or Terminal (Mac/Linux). Run the command to create the folder and enter it.",
         category: "BASIC CYCLE",
         icon: 'FolderPlus'
@@ -401,7 +401,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Initialize Git",
         command: 'git init',
         description: "Activate Git tracking in this folder.",
-        explanation: "This command creates a hidden subfolder (.git). Now Git is watching everything that happens inside here.",
+        explanation: "'git init' creates a hidden '.git' folder inside your project. That's where Git stores everything: history, branches, config. Without this folder, Git tracks nothing. Run it only once per project. Never delete '.git' manually.",
         practicalTask: "Run 'git init'. You will see a message saying 'Initialized empty Git repository'.",
         category: "BASIC CYCLE",
         icon: 'Zap'
@@ -416,7 +416,7 @@ const STEPS_EN: TutorialStep[] = [
             linux: 'echo "<h1>Hello Cyberpunk World</h1>" > index.html'
         },
         description: "Create your first HTML file.",
-        explanation: "We are creating a real file. In a real project you'd use a code editor (VS Code), but here we do it via terminal.",
+        explanation: "'echo' prints text and '>' redirects it to a file (creates it if it doesn't exist, overwrites if it does). In real projects you'd use VS Code or any editor. This step simulates creating your first code file so Git has something to track.",
         practicalTask: "Copy the command. This will create a file named 'index.html' with a title inside.",
         category: "BASIC CYCLE",
         icon: 'FileCode'
@@ -426,7 +426,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Check Radar (Status)",
         command: 'git status',
         description: "Check which files are new or changed.",
-        explanation: "The most important command. It tells you 'index.html' is red (Untracked). Git sees it, but isn't saving it yet.",
+        explanation: "'git status' is your real-time radar. It shows 3 categories: Untracked (red) — new files Git doesn't know about. Modified (red) — known files with unstaged changes. Staged (green) — ready for the next commit. Use it constantly — it's free and modifies nothing.",
         practicalTask: "Run the command and observe the red text.",
         category: "BASIC CYCLE",
         icon: 'Radar'
@@ -436,7 +436,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Stage Files",
         command: 'git add index.html',
         description: "Move file to the staging area.",
-        explanation: "You tell Git: 'I want to include this file in the next photo we take'.",
+        explanation: "'git add' moves changes to the Staging Area. You can be selective: 'git add index.html' adds only that file. 'git add .' adds everything. This lets you make atomic commits — one commit per feature, not one per work session.",
         practicalTask: "Run the command. If you do 'git status' again, you'll see it is now green.",
         category: "BASIC CYCLE",
         icon: 'PackagePlus'
@@ -446,7 +446,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Save Version (Commit)",
         command: 'git commit -m "Create home page"',
         description: "Permanently save changes.",
-        explanation: "Click! 📸 You've created version 1.0 of your history. The message in quotes explains what you did.",
+        explanation: "A commit is a permanent snapshot of the project at that moment. Each commit has: a unique hash (e.g. a3f2c1d), author, date, and message. The message should describe the WHAT and WHY of the change, not the how. Convention: use imperative verbs ('Create', 'Fix', 'Add').",
         practicalTask: "Run the command to consolidate your creation.",
         category: "BASIC CYCLE",
         icon: 'Save',
@@ -461,7 +461,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Analyze Diff",
         command: 'git diff',
         description: "Show exactly what changed inside files.",
-        explanation: "Before saving new changes, it is vital to review what lines of code you modified to avoid breaking things.",
+        explanation: "'git diff' compares the Working Directory with the Staging Area and shows differences line by line. Red lines (with '-') are what was removed. Green lines (with '+') are what was added. If you already ran 'git add', use 'git diff --staged' to see staged changes.",
         practicalTask: "First modify the file (e.g., echo '<h2>Status: Online</h2>' >> index.html) then run 'git diff'.",
         category: "BASIC CYCLE",
         icon: 'ScanEye'
@@ -471,7 +471,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Save Changes V2",
         command: 'git add . && git commit -m "Add subtitle"',
         description: "Combo: Stage everything and save.",
-        explanation: "Ninja trick: 'git add .' adds EVERYTHING you changed, then we commit immediately.",
+        explanation: "'git add .' is the universal selector — it stages all modified and new files in the current directory (and subdirectories). Chaining it with commit is efficient for simple changes. For complex changes, review with 'git status' before a mass add.",
         practicalTask: "Run this combo to save version 2.0 of your web.",
         category: "BASIC CYCLE",
         icon: 'Layers',
@@ -487,7 +487,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Create Branch",
         command: 'git branch feature-login',
         description: "Create an alternative timeline.",
-        explanation: "Branches allow you to experiment without breaking the main code. It's like creating an 'Alternate World'.",
+        explanation: "A branch is a lightweight pointer to a specific commit. Creating a branch is instant and copies no files. The 'main' branch stays intact while you work on 'feature-login'. This is the foundation of teamwork: each developer works on their own branch without interfering with others.",
         practicalTask: "Run the command to create a branch named 'feature-login'. Your main code stays intact.",
         category: "PARALLEL UNIVERSES",
         icon: 'GitBranch'
@@ -497,7 +497,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Switch Universe",
         command: 'git checkout feature-login',
         description: "Teleport to the new branch.",
-        explanation: "Creating isn't enough, you must 'enter' it. Now any change exists only in 'feature-login'.",
+        explanation: "'git checkout' moves the HEAD pointer to the specified branch and updates your Working Directory with that branch's files. In modern Git (2.23+) 'git switch feature-login' is preferred for clarity. See which branch you're on with 'git branch' — the active one has an asterisk.",
         practicalTask: "Run command. You'll see 'Switched to branch feature-login'. Note: Newer versions use 'git switch'.",
         category: "PARALLEL UNIVERSES",
         icon: 'ArrowRightLeft',
@@ -510,7 +510,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Merge Realities",
         command: 'git checkout main && git merge feature-login',
         description: "Join changes from experiment to main.",
-        explanation: "Once your experiment works, you return to original reality (main) and absorb the changes.",
+        explanation: "'git merge' integrates the history of one branch into another. First return to 'main' (the target branch), then run merge. If no conflicts, Git does a fast-forward or creates a merge commit automatically. If conflicts exist, Git marks the files and you resolve them manually.",
         practicalTask: "Return to main and merge your work. Your experiment is now official.",
         category: "PARALLEL UNIVERSES",
         icon: 'GitMerge'
@@ -522,7 +522,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Rename Main Branch",
         command: 'git branch -M main',
         description: "Standardize your timeline name.",
-        explanation: "Formerly called 'master', the industry standard is now 'main'.",
+        explanation: "The industry standard shifted from 'master' to 'main' in 2020 (GitHub, GitLab, Bitbucket). '-M' forces the rename even if a 'main' branch already exists. Do this before connecting to GitHub so branch names match and push works without extra config.",
         practicalTask: "Run the command to modernize your repository.",
         category: "CLOUD & COLLAB",
         icon: 'GitBranch',
@@ -535,7 +535,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Create GitHub Repo",
         command: 'echo "Go to GitHub.com -> New Repository"',
         description: "Manual action in browser.",
-        explanation: "Git is local (PC). GitHub is cloud. You need to create space in the cloud to upload your code.",
+        explanation: "A GitHub repository is the cloud space for your project. When creating it, do NOT check 'Initialize with README' — if you do, GitHub creates an initial commit that will conflict with your local history when you try to push. Copy the HTTPS URL (not SSH) if you haven't set up SSH keys yet.",
         practicalTask: "Go to GitHub.com, login, create a new repo named 'CyberProfile'. DO NOT initialize with README. Copy the HTTPS URL.",
         category: "CLOUD & COLLAB",
         icon: 'Globe'
@@ -545,7 +545,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Connect Cables (Remote)",
         command: 'git remote add origin https://github.com/YOUR_USER/CyberProfile.git',
         description: "Link local folder with GitHub.",
-        explanation: "You are saving the GitHub address with the nickname 'origin'. So you don't have to type the URL every time.",
+        explanation: "'git remote add' registers a remote URL with an alias. 'origin' is the universal convention for the primary remote. You can have multiple remotes (e.g. 'upstream' for the original repo in a fork). Verify with 'git remote -v'. The URL can be HTTPS (username/password) or SSH (public key).",
         practicalTask: "Paste the command BUT replace the URL with the one you copied from your real GitHub.",
         category: "CLOUD & COLLAB",
         icon: 'Link',
@@ -559,7 +559,7 @@ const STEPS_EN: TutorialStep[] = [
         title: "Upload to Cloud (Push)",
         command: 'git push -u origin main',
         description: "Send local commits to GitHub.",
-        explanation: "Truth moment! Files travel from PC to server. The '-u' connects your local branch with the cloud one forever.",
+        explanation: "'git push' sends your local commits to the remote. '-u' (--set-upstream) sets tracking: from now on, 'git push' with no arguments knows where to send. First time, GitHub will ask for authentication via browser (token) or SSH key. After pushing, your commits are visible on github.com.",
         practicalTask: "Run the command. If it's your first time, it will ask to login in browser.",
         category: "CLOUD & COLLAB",
         icon: 'UploadCloud',
