@@ -11,6 +11,7 @@ import Header from './components/layout/Header';
 import { IconMap, getPhaseStyles } from './utils/stepHelper';
 import { playSfx } from './utils/soundEngine';
 import { Terminal, BrainCircuit, ArrowRight, ChevronLeft, Tag } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 // ── Static data ───────────────────────────────────────────────────────────────
 
@@ -312,6 +313,8 @@ const App: React.FC = () => {
             <AiChat language={language} />
             <CommandMatrix isOpen={isMatrixOpen} onClose={() => setIsMatrixOpen(false)} language={language} />
 
+            {/* Vercel Web Analytics */}
+            <Analytics />
         </div>
     );
 };
